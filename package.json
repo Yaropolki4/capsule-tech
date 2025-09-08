@@ -1,0 +1,21 @@
+{
+  "name": "@capsule",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "pnpm build:server && pnpm build:client",
+    "build:server": "pnpm --filter @capsule/backend build",
+    "build:client": "pnpm --filter @capsule/frontend build",
+    "server:dev": "pnpm --filter @capsule/backend start:dev",
+    "server": "pnpm --filter @capsule/backend start",
+    "client:dev": "pnpm --filter @capsule/frontend dev",
+    "client": "pnpm --filter @capsule/frontend start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
