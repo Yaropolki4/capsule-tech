@@ -1,22 +1,27 @@
 import { httpTransport, isClientError } from "@/shared/api/http-transport";
 import type { RegisterData, User } from "../model/types";
 import type { AccessToken } from "@/shared/api/types";
-import { z } from "zod";
 import { HttpError } from "@/shared/api/http-error";
-import { REGISTER_ERROR_CAUSES } from "../model/constants";
-import { userSchema } from "../model/user.schema";
+import {
+  registerErrorDtoSchema,
+  type RegisterErrorDto,
+  registerDtoResponseSchema,
+  type RegisterDtoRequest,
+} from "@capsule/common";
 
-const registerResponseSchema = z.object({
-  access_token: z.string(),
-  user: userSchema,
-});
+const serializeRegisterData = (data: RegisterData): RegisterDtoRequest => {
+  return data;
+};
 
-const registerErrorDataSchema = z.object({
-  message: z.string(),
-  cause: z.union(REGISTER_ERROR_CAUSES.map((cause) => z.literal(cause))),
-});
+const deserializeRegisterData = (
+  data: unknown
+): AccessToken & { user: User } => {
+  return registerDtoResponseSchema.parse(data);
+};
 
-type RegisterDataError = z.infer<typeof registerErrorDataSchema>;
+const deserializeRegisterError = (data: unknown): RegisterErrorDto => {
+  return registerErrorDtoSchema.parse(data);
+};
 
 type RegisterResult =
   | {
@@ -25,24 +30,11 @@ type RegisterResult =
     }
   | {
       error: {
-        cause: RegisterDataError["cause"] | "server";
-        message: RegisterDataError["message"];
+        cause: RegisterErrorDto["cause"] | "server";
+        message: RegisterErrorDto["message"];
       };
       data: null;
     };
-
-const deserializeRegisterData = (
-  data: unknown
-): AccessToken & { user: User } => {
-  return {
-    accessToken: registerResponseSchema.parse(data).access_token,
-    user: registerResponseSchema.parse(data).user,
-  };
-};
-
-const deserializeRegisterError = (data: unknown): RegisterDataError => {
-  return registerErrorDataSchema.parse(data);
-};
 
 export async function register(data: RegisterData): Promise<RegisterResult> {
   try {
@@ -50,7 +42,7 @@ export async function register(data: RegisterData): Promise<RegisterResult> {
       error: null,
       data: deserializeRegisterData(
         await httpTransport.post("/auth/register", {
-          json: data,
+          json: serializeRegisterData(data),
         })
       ),
     };

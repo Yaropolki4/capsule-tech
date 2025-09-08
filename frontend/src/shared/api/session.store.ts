@@ -6,6 +6,7 @@ export interface SessionStore {
   accessToken: string;
   setAccessToken: (accessToken: string) => void;
   expireAt: number;
+  resetAccessToken: () => void;
 }
 
 export const sessionStore = create<SessionStore>()(
@@ -17,6 +18,11 @@ export const sessionStore = create<SessionStore>()(
         set((prev) => {
           prev.accessToken = accessToken;
           prev.expireAt = Date.now() + 1000 * 60 * 60 * 24;
+        }),
+      resetAccessToken: () =>
+        set((prev) => {
+          prev.accessToken = "";
+          prev.expireAt = 0;
         }),
     })),
     {
@@ -35,4 +41,8 @@ export function getAccessToken() {
 
 export function isAccessTokenExpired() {
   return sessionStore.getState().expireAt < Date.now();
+}
+
+export function resetAccessToken() {
+  sessionStore.getState().resetAccessToken();
 }

@@ -6,15 +6,22 @@ import {
   Req,
   Res,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { RegisterDto } from './dto/register.dto';
+import {
+  RegisterDtoRequest,
+  registerDtoRequestSchema,
+  RegisterDtoResponse,
+  LoginDtoResponse,
+} from '@capsule/common';
 import * as bcrypt from 'bcrypt';
 import { AccessTokenPayload } from './types/access-token-payload';
 import { UserRepository } from 'src/user/user.repository';
 import { JwtRefresh } from './decorators/jwt-refresh.decorator';
+import { ZodValidationPipe } from 'src/shared/zod-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -28,7 +35,7 @@ export class AuthController {
   public async login(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<LoginDtoResponse> {
     const token = this.authService.login(req.user as AccessTokenPayload);
     this.authService.setRefreshToken(req.user as AccessTokenPayload, res);
     const user = await this.userRepository.findByEmail(
@@ -54,10 +61,11 @@ export class AuthController {
   }
 
   @Post('register')
+  @UsePipes(new ZodValidationPipe(registerDtoRequestSchema))
   async register(
-    @Body() registerDto: RegisterDto,
+    @Body() registerDto: RegisterDtoRequest,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<RegisterDtoResponse> {
     const user = await this.authService.register({
       name: registerDto.name,
       fullName: registerDto.fullName,
@@ -98,7 +106,7 @@ export class AuthController {
     );
 
     if (!user) {
-      throw new InternalServerErrorException('User not found');
+      throw new InternalServerErrorException('Пользователь не найден');
     }
 
     const token = this.authService.login(req.user as AccessTokenPayload);

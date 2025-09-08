@@ -6,6 +6,11 @@ common/node_modules
 backend/dist
 frontend/.next
 frontend/build
+common/dist
 
 backend/.env
 frontend/.env
+
+frontend/tsconfig.tsbuildinfo
+backend/tsconfig.tsbuildinfo
+

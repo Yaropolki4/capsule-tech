@@ -21,6 +21,7 @@ import { User } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { UserRepository } from './user.repository';
 import { AccessTokenPayload } from 'src/auth/types/access-token-payload';
+import { MeResponseDto } from '@capsule/common';
 
 @Controller('user')
 @UseGuards(JwtGuard)
@@ -31,14 +32,15 @@ export class UserController {
   ) {}
 
   @Get('me')
-  public async me(@Req() req: Request) {
-    const user = req.user as AccessTokenPayload;
+  public async me(@Req() req: Request): Promise<MeResponseDto> {
+    const userPayload = req.user as AccessTokenPayload;
+    const user = await this.userRepository.findByEmail(userPayload.email);
 
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    return await this.userRepository.findByEmail(user.email);
+    return user;
   }
 
   @Patch(':id')

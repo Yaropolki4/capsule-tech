@@ -1,9 +1,9 @@
 import { httpTransport } from "@/shared/api/http-transport";
 import type { User } from "../model/types";
-import { userSchema } from "../model/user.schema";
+import { meResponseDtoSchema } from "@capsule/common";
 
 const deserializeGetMeData = (data: unknown): User => {
-  return userSchema.parse(data);
+  return meResponseDtoSchema.parse(data);
 };
 
 export async function getMe() {

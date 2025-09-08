@@ -4,12 +4,14 @@ import { LoginForm } from "@/features/auth";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/shared/providers/auth-context";
+import { logout } from "@/entities/user-session";
+import { Button } from "@/shared/ui/ui/button";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    return <div>Home</div>;
+    return <Button onClick={() => logout()}>Logout</Button>;
   }
 
   return (

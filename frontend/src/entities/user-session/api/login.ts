@@ -1,42 +1,24 @@
-import type { LoginDto } from "@/shared/api/dto/login.dto";
 import { httpTransport, isClientError } from "@/shared/api/http-transport";
 import type { LoginData, User } from "../model/types";
 import type { AccessToken } from "@/shared/api/types";
 import { HttpError } from "@/shared/api/http-error";
-import { z } from "zod";
-import { AUTH_ERROR_CAUSES } from "../model/constants";
-import { userSchema } from "../model/user.schema";
+import {
+  loginDtoResponseSchema,
+  type LoginErrorDto,
+  loginErrorDtoSchema,
+  type LoginDtoRequest,
+} from "@capsule/common";
 
-export const serializeLoginData = (data: LoginData): LoginDto => {
-  return {
-    email: data.email,
-    password: data.password,
-  };
+export const serializeLoginData = (data: LoginData): LoginDtoRequest => {
+  return data;
 };
-
-const loginResponseSchema = z.object({
-  access_token: z.string(),
-  user: userSchema,
-});
-
-const loginErrorDataSchema = z.object({
-  message: z.string(),
-  cause: z.union(AUTH_ERROR_CAUSES.map((cause) => z.literal(cause))),
-});
-
-type LoginDataError = z.infer<typeof loginErrorDataSchema>;
 
 const deserializeLoginData = (data: unknown): AccessToken & { user: User } => {
-  const parsedData = loginResponseSchema.parse(data);
-
-  return {
-    accessToken: parsedData.access_token,
-    user: parsedData.user,
-  };
+  return loginDtoResponseSchema.parse(data);
 };
 
-const deserializeLoginError = (data: unknown): LoginDataError => {
-  return loginErrorDataSchema.parse(data);
+const deserializeLoginError = (data: unknown): LoginErrorDto => {
+  return loginErrorDtoSchema.parse(data);
 };
 
 type LoginResult =
@@ -46,8 +28,8 @@ type LoginResult =
     }
   | {
       error: {
-        cause: LoginDataError["cause"] | "server";
-        message: LoginDataError["message"];
+        cause: LoginErrorDto["cause"] | "server";
+        message: LoginErrorDto["message"];
       };
       data: null;
     };

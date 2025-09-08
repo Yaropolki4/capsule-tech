@@ -1,2 +1,2 @@
-export const REGISTER_ERROR_CAUSES = ["email", "password", "name"] as const;
-export const AUTH_ERROR_CAUSES = ["email", "password"] as const;
+import { AUTH_ERROR_CAUSES, REGISTER_ERROR_CAUSES } from "@capsule/common";
+export { AUTH_ERROR_CAUSES, REGISTER_ERROR_CAUSES };

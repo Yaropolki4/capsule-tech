@@ -3,7 +3,7 @@ import type { User } from "./types";
 
 export interface UserStore {
   user: Maybe<User>;
-  setUser: (user: User) => void;
+  setUser: (user: Maybe<User>) => void;
 }
 
 export const userStore = create<UserStore>()((set) => ({
@@ -16,4 +16,8 @@ export function useUser() {
     userStore((state) => state.user),
     userStore((state) => state.setUser),
   ] as const;
+}
+
+export function resetUser() {
+  return userStore.getState().setUser(undefined);
 }

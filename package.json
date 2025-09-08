@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm build:server && pnpm build:client",
+    "build": "pnpm build:common && pnpm build:server && pnpm build:client",
     "build:server": "pnpm --filter @capsule/backend build",
     "build:client": "pnpm --filter @capsule/frontend build",
+    "build:common": "pnpm --filter @capsule/common build",
     "server:dev": "pnpm --filter @capsule/backend start:dev",
     "server": "pnpm --filter @capsule/backend start",
     "client:dev": "pnpm --filter @capsule/frontend dev",

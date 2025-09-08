@@ -3,9 +3,9 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import { RegisterDto } from './dto/register.dto';
 import { AccessTokenPayload } from './types/access-token-payload';
 import { UserRepository } from 'src/user/user.repository';
+import { RegisterDtoRequest } from '@capsule/common';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +46,7 @@ export class AuthService {
   public login(user: AccessTokenPayload) {
     const payload = { email: user.email, id: user.id };
 
-    return { access_token: this.jwtService.sign(payload, { expiresIn: '1d' }) };
+    return { accessToken: this.jwtService.sign(payload, { expiresIn: '1d' }) };
   }
 
   public setRefreshToken(user: AccessTokenPayload, res: Response) {
@@ -64,7 +64,7 @@ export class AuthService {
     );
   }
 
-  public async register(registerDto: RegisterDto) {
+  public async register(registerDto: RegisterDtoRequest) {
     const user = await this.userRepository.findByEmail(registerDto.email);
 
     if (user) {

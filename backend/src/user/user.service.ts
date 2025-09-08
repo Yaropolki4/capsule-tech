@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { S3Service } from 'src/s3/s3.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUser } from './types';
 import { UserRepository } from './user.repository';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class UserService {
     private readonly s3Service: S3Service,
   ) {}
 
-  async create(user: CreateUserDto) {
+  async create(user: CreateUser) {
     return this.userRepository.create(user);
   }
 

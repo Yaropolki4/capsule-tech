@@ -8,6 +8,9 @@ export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
   },
+  {
+    files: ['@capsule/common/**/*', 'src/**/*'],
+  },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,

@@ -1,10 +1,7 @@
-export { userStore } from "./model/user.store";
 export { bootstrapUser } from "./model/get-me";
 export { useUser } from "./model/user.store";
-export { getMe } from "./api/get-me";
-export { getAccessToken, useAccessToken } from "../../shared/api/session.store";
-export type { User } from "./model/types";
+export { useAccessToken } from "@/shared/api/session.store";
 export { login } from "./api/login";
 export { register } from "./api/register";
 export { AUTH_ERROR_CAUSES, REGISTER_ERROR_CAUSES } from "./model/constants";
-export type { LoginData, RegisterData } from "./model/types";
+export { logout } from "./api/logout";
