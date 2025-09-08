@@ -1,0 +1,45 @@
+"use client";
+
+import { LoginForm } from "@/features/auth";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/shared/providers/auth-context";
+
+export default function Home() {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <div>Home</div>;
+  }
+
+  return (
+    <main className="flex w-full h-full">
+      <section
+        className={cn(
+          "bg-secondary flex-1",
+          "border-r-2 border-border",
+          "md:flex max-md:hidden justify-center items-center flex-col"
+        )}
+      >
+        <p className="text-center text-4xl font-semibold mb-1">
+          Создавай. Комбинируй. Делись.
+        </p>
+        <p className="text-center text-4xl font-semibold mb-6">
+          Твой AI-стилист всегда рядом.
+        </p>
+        <Image
+          src="/images/auth-bg.png"
+          alt="Login Background"
+          width={300}
+          height={300}
+          priority
+        />
+      </section>
+      <section className="bg-background md:basis-[676px] max-md:flex-1 flex items-center justify-center">
+        <div className="px-12 w-full">
+          <LoginForm />
+        </div>
+      </section>
+    </main>
+  );
+}
