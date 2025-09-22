@@ -1,7 +1,11 @@
 export { bootstrapUser } from "./model/get-me";
-export { useUser } from "./model/user.store";
+export { useCurrentUser } from "./model/user.store";
 export { useAccessToken } from "@/shared/api/session.store";
 export { login } from "./api/login";
 export { register } from "./api/register";
 export { AUTH_ERROR_CAUSES, REGISTER_ERROR_CAUSES } from "./model/constants";
 export { logout } from "./api/logout";
+export { useUser } from "./model/use-user";
+export { editProfile } from "./api/edit-profile";
+export { updateAvatar } from "./api/update-avatar";
+export type { User } from "./model/types";

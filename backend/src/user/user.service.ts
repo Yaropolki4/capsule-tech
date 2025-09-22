@@ -1,13 +1,14 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { CreateUser } from './types';
 import { UserRepository } from './user.repository';
+import { EditUserRequestDto, EditUserResponseDto } from '@capsule/common';
 
 @Injectable()
 export class UserService {
@@ -20,18 +21,88 @@ export class UserService {
     return this.userRepository.create(user);
   }
 
-  async update(name: string, data: UpdateUserDto, email: string) {
-    const user = await this.userRepository.findByName(name);
+  async update(
+    userToUpdateName: string,
+    data: EditUserRequestDto & { avatarUrl?: string },
+    email: string,
+  ): Promise<EditUserResponseDto> {
+    console.log(userToUpdateName, data, email);
+    const user = await this.userRepository.findByName(userToUpdateName);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Пользователь не найден');
     }
 
     if (user.email !== email) {
-      throw new ForbiddenException();
+      throw new ForbiddenException('Ошибка доступа');
     }
 
-    return this.userRepository.update(name, data);
+    const userToUpdate = await this.userRepository.findByName(userToUpdateName);
+
+    if (!userToUpdate) {
+      throw new BadRequestException({
+        message: 'Пользователь не найден',
+        cause: 'name',
+      });
+    }
+
+    const newUserName = data.name;
+
+    if (!newUserName) {
+      const updatedUser = await this.userRepository.update(
+        userToUpdateName,
+        data,
+      );
+
+      return {
+        name: updatedUser.name,
+        fullName: updatedUser.fullName,
+        bio: updatedUser.bio,
+        capsulesQuantity: updatedUser.capsulesQuantity,
+        avatarUrl: updatedUser.avatarUrl ?? undefined,
+        id: updatedUser.id,
+      };
+    }
+
+    const possibleUserWithNewName =
+      await this.userRepository.findByName(newUserName);
+
+    if (!possibleUserWithNewName) {
+      const updatedUser = await this.userRepository.update(
+        userToUpdateName,
+        data,
+      );
+
+      return {
+        name: updatedUser.name,
+        fullName: updatedUser.fullName,
+        bio: updatedUser.bio,
+        capsulesQuantity: updatedUser.capsulesQuantity,
+        avatarUrl: updatedUser.avatarUrl ?? undefined,
+        id: updatedUser.id,
+      };
+    }
+
+    if (possibleUserWithNewName.id !== userToUpdate.id) {
+      throw new BadRequestException({
+        message: 'Пользователь с таким именем уже существует',
+        cause: 'name',
+      });
+    }
+
+    const updatedUser = await this.userRepository.update(
+      userToUpdateName,
+      data,
+    );
+
+    return {
+      name: updatedUser.name,
+      fullName: updatedUser.fullName,
+      bio: updatedUser.bio,
+      capsulesQuantity: updatedUser.capsulesQuantity,
+      avatarUrl: updatedUser.avatarUrl ?? undefined,
+      id: updatedUser.id,
+    };
   }
 
   async updateAvatar(name: string, file: Express.Multer.File, email: string) {
@@ -46,7 +117,14 @@ export class UserService {
     }
 
     try {
-      await this.s3Service.uploadAvatar(user.id, file.buffer, file.mimetype);
+      const avatarUrl = await this.s3Service.uploadAvatar(
+        crypto.randomUUID(),
+        file.buffer,
+        file.mimetype,
+        user.avatarUrl,
+      );
+
+      return avatarUrl;
     } catch {
       throw new InternalServerErrorException('Failed to upload avatar');
     }

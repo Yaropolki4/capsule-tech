@@ -93,6 +93,10 @@ export class HttpTransport {
     );
 
     this.client.interceptors.request.use(async (config) => {
+      if (config.data instanceof FormData) {
+        config.headers["Content-Type"] = "multipart/form-data";
+      }
+
       if (!config.params?.withAuth) {
         return config;
       }
@@ -251,7 +255,9 @@ export const httpTransport = new HttpTransport(
   }
 );
 
-export function isClientError(error: HttpError) {
+export function isClientError(
+  error: HttpError
+): error is HttpError & { params: { status: number } } {
   return (
     error instanceof HttpError &&
     "status" in error.params &&

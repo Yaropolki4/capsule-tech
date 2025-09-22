@@ -21,20 +21,39 @@ model User {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  items Item[] 
+  items Clothes[] 
 
   @@map("users")
 }
 
-model Item {
+model Clothes {
   id        String   @id @default(uuid())
-  name      String
+  imageUrl  String
   brand     String
-  category  String
+  category  ClothesCategory
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   createdBy User @relation(fields: [createdById], references: [id])
   createdById String
 
-  @@map("items")
+  @@map("clothes")
+}
+
+enum ClothesCategory {
+  SHIRT
+  PANTS
+  DRESS
+  JACKET
+  COAT
+  SKIRT
+  SHORTS
+  JEANS
+  SWIMWEAR
+  ACCESSORY
+  SHOES
+  BAG
+  OTHER
+  UNDERWEAR
+  SLEEPWEAR
+  SWIMSUIT
 }

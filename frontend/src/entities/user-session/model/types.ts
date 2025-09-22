@@ -16,5 +16,5 @@ export type User = {
   fullName: string;
   bio: string;
   capsulesQuantity: number;
-  avatarUrl: string | null;
+  avatarUrl?: string;
 };

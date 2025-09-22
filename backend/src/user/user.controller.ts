@@ -12,16 +12,23 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { User } from '@prisma/client';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { UserRepository } from './user.repository';
 import { AccessTokenPayload } from 'src/auth/types/access-token-payload';
-import { MeResponseDto } from '@capsule/common';
+import {
+  editUserRequestDtoSchema,
+  GetUserByNameResponseDto,
+  MeResponseDto,
+  EditUserRequestDto,
+} from '@capsule/common';
+import { ZodValidationPipe } from 'src/shared/validation/zod-validation.pipe';
+import { ValidatedUploadedFile } from 'src/shared/validation/create-parse-pipe-validator';
 
 @Controller('user')
 @UseGuards(JwtGuard)
@@ -40,18 +47,62 @@ export class UserController {
       throw new UnauthorizedException();
     }
 
-    return user;
+    return {
+      id: user.id,
+      email: user.email,
+      bio: user.bio,
+      capsulesQuantity: user.capsulesQuantity,
+      fullName: user.fullName,
+      name: user.name,
+      avatarUrl: user.avatarUrl ?? undefined,
+    };
+  }
+
+  @Get('by-name/:id')
+  public async get(@Param('id') id: string): Promise<GetUserByNameResponseDto> {
+    const user = await this.userRepository.findByName(id);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      fullName: user.fullName,
+      bio: user.bio,
+      capsulesQuantity: user.capsulesQuantity,
+      avatarUrl: user.avatarUrl ?? undefined,
+    };
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('file'))
   public async update(
     @Param('id') id: string,
-    @Body() body: UpdateUserDto,
+    @Body(new ZodValidationPipe(editUserRequestDtoSchema))
+    body: EditUserRequestDto,
     @Req() req: Request,
+    @ValidatedUploadedFile()
+    file?: Express.Multer.File,
   ) {
-    const user = req.user as User;
+    const user = req.user as AccessTokenPayload;
 
-    return await this.userService.update(id, body, user.email);
+    const currentUser = await this.userRepository.findByEmail(user.email);
+
+    if (!currentUser) {
+      throw new UnauthorizedException();
+    }
+
+    const newAvatarUrl = file
+      ? await this.userService.updateAvatar(id, file, user.email)
+      : undefined;
+
+    return await this.userService.update(
+      id,
+      { ...body, avatarUrl: newAvatarUrl },
+      user.email,
+    );
   }
 
   @Patch(':id/avatar')
@@ -62,8 +113,13 @@ export class UserController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
-          new FileTypeValidator({ fileType: 'image/jpeg' }),
+          new MaxFileSizeValidator({
+            maxSize: 1024 * 1024 * 5,
+            message: 'Слишком большой файл',
+          }),
+          new FileTypeValidator({
+            fileType: /(image\/jpeg|image\/png|image\/jpg)/,
+          }),
         ],
         fileIsRequired: true,
       }),
@@ -71,6 +127,7 @@ export class UserController {
     file: Express.Multer.File,
   ) {
     const user = req.user as User;
+    console.log(file.mimetype);
 
     return await this.userService.updateAvatar(id, file, user.email);
   }

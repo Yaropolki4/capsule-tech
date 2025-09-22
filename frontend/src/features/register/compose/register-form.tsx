@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   useAccessToken,
-  useUser,
+  useCurrentUser,
   register as registerUser,
   REGISTER_ERROR_CAUSES,
 } from "@/entities/user-session";
@@ -38,7 +38,7 @@ type LoginFormData = z.infer<typeof authSchema>;
 export function RegisterForm() {
   const [serverError, setServerError] = useState<Maybe<string>>(undefined);
   const [_, setAccessToken] = useAccessToken();
-  const [__, setUser] = useUser();
+  const [__, setUser] = useCurrentUser();
   const router = useRouter();
   const {
     register,

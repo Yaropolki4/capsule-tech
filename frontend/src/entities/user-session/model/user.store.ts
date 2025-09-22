@@ -11,7 +11,7 @@ export const userStore = create<UserStore>()((set) => ({
   setUser: (user) => set({ user }),
 }));
 
-export function useUser() {
+export function useCurrentUser() {
   return [
     userStore((state) => state.user),
     userStore((state) => state.setUser),

@@ -1,49 +1,109 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { extension as getFileExtension } from 'mime-types';
+
+const paths = {
+  avatar: 'avatars',
+  clothes: 'clothes',
+};
 
 @Injectable()
 export class S3Service {
   private readonly bucket = 'capsule-test';
-  private readonly s3 = new S3Client({
-    region: 'ru-central1',
-    endpoint: 'https://storage.yandexcloud.net',
-    credentials: {
-      accessKeyId: 'REDACTED_S3_ACCESS_KEY_ID',
-      secretAccessKey: 'REDACTED_S3_SECRET_ACCESS_KEY',
-    },
-  });
+  private readonly endpoint = 'https://storage.yandexcloud.net';
+  private readonly s3: S3Client;
 
-  async uploadAvatar(filename: string, buffer: Buffer, mimetype: string) {
+  constructor(private readonly configService: ConfigService) {
+    this.s3 = new S3Client({
+      region: 'ru-central1',
+      endpoint: this.endpoint,
+      credentials: {
+        accessKeyId: this.configService.getOrThrow<string>('S3_ACCESS_KEY_ID'),
+        secretAccessKey: this.configService.getOrThrow<string>(
+          'S3_SECRET_ACCESS_KEY_ID',
+        ),
+      },
+    });
+  }
+
+  async uploadAvatar(
+    filename: string,
+    buffer: Buffer,
+    mimetype: string,
+    prevAvatarUrl: string | null,
+  ) {
     try {
-      const uploadResult = await this.s3.send(
+      const fileExtension = getFileExtension(mimetype);
+
+      if (!fileExtension) {
+        throw new InternalServerErrorException({
+          message: 'Ошибка расширения файла',
+          cause: 'file',
+        });
+      }
+
+      const file = `${filename}.${fileExtension}`;
+
+      await this.s3.send(
         new PutObjectCommand({
           Bucket: this.bucket,
-          Key: `avatars/${filename}.jpeg`,
+          Key: `${paths.avatar}/${file}`,
           Body: buffer,
           ContentType: mimetype,
         }),
       );
 
-      return uploadResult;
+      const prevAvatarKey = prevAvatarUrl?.split('/').pop();
+
+      if (prevAvatarKey) {
+        await this.s3.send(
+          new DeleteObjectCommand({
+            Bucket: this.bucket,
+            Key: `${paths.avatar}/${prevAvatarKey}`,
+          }),
+        );
+      }
+
+      return `${this.endpoint}/${this.bucket}/${paths.avatar}/${file}`;
     } catch {
-      throw new InternalServerErrorException('Failed to upload avatar');
+      throw new InternalServerErrorException(
+        'Не удалось загрузить изображение',
+      );
     }
   }
 
-  async uploadItem(filename: string, buffer: Buffer, mimetype: string) {
+  async uploadClothes(filename: string, buffer: Buffer, mimetype: string) {
     try {
-      const uploadResult = await this.s3.send(
+      const fileExtension = getFileExtension(mimetype);
+
+      if (!fileExtension) {
+        throw new InternalServerErrorException({
+          message: 'Ошибка расширения файла',
+          cause: 'file',
+        });
+      }
+
+      const file = `${filename}.${fileExtension}`;
+
+      await this.s3.send(
         new PutObjectCommand({
           Bucket: this.bucket,
-          Key: `items/${filename}.jpeg`,
+          Key: `${paths.clothes}/${file}`,
           Body: buffer,
           ContentType: mimetype,
         }),
       );
 
-      return uploadResult;
+      return `${this.endpoint}/${this.bucket}/${paths.clothes}/${file}`;
     } catch {
-      throw new InternalServerErrorException('Failed to upload item');
+      throw new InternalServerErrorException(
+        'Не удалось загрузить изображение',
+      );
     }
   }
 }

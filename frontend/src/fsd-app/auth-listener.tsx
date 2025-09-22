@@ -13,7 +13,7 @@ export function AuthListener({ children }: { children: React.ReactNode }) {
         loader.setIsLoading(false);
         isFirstRender.current = false;
       }
-    }, 0);
+    }, 50);
   }, [isAuthenticated, loader]);
 
   return children;

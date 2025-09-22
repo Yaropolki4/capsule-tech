@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { RootProvider } from "@/fsd-app";
+import { Toaster } from "@/shared/ui/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,7 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <div className="fixed top-0 left-0 right-0 bottom-0">
+        <Toaster />
+        <div className="fixed top-0 left-0 right-0 bottom-0 flex max-md:flex-col-reverse">
           <RootProvider>{children}</RootProvider>
         </div>
       </body>

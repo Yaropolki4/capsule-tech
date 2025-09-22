@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { routes } from "@/shared/constants/routes";
 import {
   useAccessToken,
-  useUser,
+  useCurrentUser,
   login,
   AUTH_ERROR_CAUSES,
 } from "@/entities/user-session";
@@ -29,7 +29,7 @@ export function LoginForm() {
   const [serverError, setServerError] = useState<Maybe<string>>(undefined);
   const router = useRouter();
   const [_, setAccessToken] = useAccessToken();
-  const [__, setUser] = useUser();
+  const [__, setUser] = useCurrentUser();
 
   const {
     register,
@@ -45,6 +45,8 @@ export function LoginForm() {
     const result = await login(data);
 
     if (result.data) {
+      router.replace(routes.getProfile(result.data.user.name));
+
       setUser(result.data.user);
 
       setAccessToken(result.data.accessToken);

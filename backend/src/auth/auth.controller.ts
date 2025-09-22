@@ -21,7 +21,7 @@ import * as bcrypt from 'bcrypt';
 import { AccessTokenPayload } from './types/access-token-payload';
 import { UserRepository } from 'src/user/user.repository';
 import { JwtRefresh } from './decorators/jwt-refresh.decorator';
-import { ZodValidationPipe } from 'src/shared/zod-validation.pipe';
+import { ZodValidationPipe } from 'src/shared/validation/zod-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
@@ -52,7 +52,7 @@ export class AuthController {
         email: user.email,
         name: user.name,
         fullName: user.fullName,
-        avatarUrl: user.avatarUrl,
+        avatarUrl: user.avatarUrl ?? undefined,
         bio: user.bio,
         capsulesQuantity: user.capsulesQuantity,
         id: user.id,
@@ -82,7 +82,7 @@ export class AuthController {
         email: user.email,
         name: user.name,
         fullName: user.fullName,
-        avatarUrl: user.avatarUrl,
+        avatarUrl: user.avatarUrl ?? undefined,
         bio: user.bio,
         capsulesQuantity: user.capsulesQuantity,
         id: user.id,
