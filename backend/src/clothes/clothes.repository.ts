@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Clothes } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  SECURE_PRISMA_SERVICE,
+  SecurePrismaService,
+} from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ClothesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(SECURE_PRISMA_SERVICE) private readonly prisma: SecurePrismaService,
+  ) {}
 
   create(
     clothes: Pick<Clothes, 'brand' | 'category' | 'imageUrl' | 'createdById'>,

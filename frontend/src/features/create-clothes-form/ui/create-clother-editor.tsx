@@ -43,11 +43,11 @@ export function CreateClotherEditor({
       <>
         <div
           style={{ backdropFilter: "blur(10px)", width: blurWidth }}
-          className="absolute h-full left-0"
+          className="absolute h-full left-0 border-r border-primary border-dashed"
         />
         <div
           style={{ backdropFilter: "blur(10px)", width: blurWidth }}
-          className="absolute h-full right-0"
+          className="absolute h-full right-0 border-l border-primary border-dashed"
         />
       </>
     );

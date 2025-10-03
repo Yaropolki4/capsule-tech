@@ -9,9 +9,9 @@ import {
   Req,
   UseInterceptors,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ClothesService } from './clothes.service';
-import { User } from '@prisma/client';
 import type { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
@@ -22,6 +22,8 @@ import {
   UpdateClothesRequestDto,
   CreateClothesResponseDto,
   GetClothesResponseDto,
+  getClothesRequestDtoSchema,
+  GetClothesRequestDto,
 } from '@capsule/common';
 import { ValidatedUploadedFile } from 'src/shared/validation/create-parse-pipe-validator';
 import { AccessTokenPayload } from 'src/auth/types/access-token-payload';
@@ -57,15 +59,18 @@ export class ClothesController {
   }
 
   @Get()
-  async findAll(@Req() req: Request): Promise<GetClothesResponseDto> {
-    const user = req.user as User;
-
-    return (await this.clothesService.findAll(user.email)).map((clothes) => ({
-      brand: clothes.brand,
-      category: clothes.category,
-      imageUrl: clothes.imageUrl,
-      createdById: clothes.createdById,
-    }));
+  async findAll(
+    @Query(new ZodValidationPipe(getClothesRequestDtoSchema))
+    { userId }: GetClothesRequestDto,
+  ): Promise<GetClothesResponseDto> {
+    return (await this.clothesService.getUserClothes(userId)).map(
+      (clothes) => ({
+        brand: clothes.brand,
+        category: clothes.category,
+        imageUrl: clothes.imageUrl,
+        createdById: clothes.createdById,
+      }),
+    );
   }
 
   @Post('remove-bg')

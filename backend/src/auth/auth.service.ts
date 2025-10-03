@@ -15,7 +15,7 @@ export class AuthService {
   ) {}
 
   public async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this.userRepository.unsafeFindByEmail(email);
 
     if (!user) {
       throw new BadRequestException({
@@ -49,19 +49,18 @@ export class AuthService {
     return { accessToken: this.jwtService.sign(payload, { expiresIn: '1d' }) };
   }
 
-  public setRefreshToken(user: AccessTokenPayload, res: Response) {
+  public getRefreshToken(user: AccessTokenPayload) {
     const payload: AccessTokenPayload = { email: user.email, id: user.id };
 
-    res.cookie(
-      'refresh_token',
-      this.jwtService.sign(payload, { expiresIn: '7d' }),
-      {
+    return {
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      cookieParams: {
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
       },
-    );
+    } as const;
   }
 
   public async register(registerDto: RegisterDtoRequest) {

@@ -3,9 +3,14 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { extension as getFileExtension } from 'mime-types';
+import { s3Config } from 'src/config/env-config/load-config';
 
 const paths = {
   avatar: 'avatars',
@@ -18,15 +23,15 @@ export class S3Service {
   private readonly endpoint = 'https://storage.yandexcloud.net';
   private readonly s3: S3Client;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    @Inject(s3Config.KEY) private readonly config: ConfigType<typeof s3Config>,
+  ) {
     this.s3 = new S3Client({
       region: 'ru-central1',
       endpoint: this.endpoint,
       credentials: {
-        accessKeyId: this.configService.getOrThrow<string>('S3_ACCESS_KEY_ID'),
-        secretAccessKey: this.configService.getOrThrow<string>(
-          'S3_SECRET_ACCESS_KEY_ID',
-        ),
+        accessKeyId: this.config.s3AccessKeyId,
+        secretAccessKey: this.config.s3SecretAccessKeyId,
       },
     });
   }

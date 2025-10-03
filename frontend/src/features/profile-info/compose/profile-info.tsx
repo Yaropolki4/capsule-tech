@@ -9,18 +9,24 @@ import { useCurrentUser, type User } from "@/entities/user-session";
 import { EditProfileMenu } from "../ui/edit-profile-menu";
 import { useModal } from "@/shared/lib/modal/use-modal";
 import { MobileProfileInfo } from "../ui/mobile-profile-info";
+import { usePageUser } from "@/shared/providers/page-user/page-user-context";
 
 export function ProfileInfo({
   pageUser,
   isLoading,
-  pageUserName,
+  manageSubscriptionButton,
+  onSubscribersCountClick,
+  onFollowingsCountClick,
 }: {
   pageUser: Maybe<Omit<User, "email">>;
   isLoading: boolean;
-  pageUserName: string;
+  manageSubscriptionButton: React.ReactNode;
+  onSubscribersCountClick: () => void;
+  onFollowingsCountClick: () => void;
 }) {
   const [currentUser] = useCurrentUser();
   const { openModal } = useModal();
+  const pageUserName = usePageUser();
 
   if (isLoading) {
     return (
@@ -55,24 +61,28 @@ export function ProfileInfo({
     return null;
   }
 
-  const controls = ownProfile ? (
-    <Button
-      onClick={() => {
-        openModal({
-          Component: EditProfileMenu,
-          props: {
-            name: currentUser.name,
-            bio: pageUser.bio,
-          },
-        });
-      }}
-      variant="outline"
-    >
-      Редактировать профиль
-    </Button>
-  ) : (
-    <Button size="s">Подписаться</Button>
-  );
+  const renderControls = () => {
+    if (ownProfile) {
+      return (
+        <Button
+          onClick={() => {
+            openModal({
+              Component: EditProfileMenu,
+              props: {
+                name: pageUser.name,
+                bio: pageUser.bio,
+              },
+            });
+          }}
+          variant="outline"
+        >
+          Редактировать профиль
+        </Button>
+      );
+    }
+
+    return manageSubscriptionButton;
+  };
 
   return (
     <>
@@ -87,12 +97,20 @@ export function ProfileInfo({
         info={
           <>
             <div className="flex items-center gap-4 max-md:hidden">
-              <ProfileNumberField number={1} label="подписчиков" />
+              <ProfileNumberField
+                onClick={onSubscribersCountClick}
+                number={pageUser.followersCount}
+                label="подписчиков"
+              />
+              <ProfileNumberField
+                onClick={onFollowingsCountClick}
+                number={pageUser.followingCount}
+                label="подписок"
+              />
               <ProfileNumberField
                 number={pageUser.capsulesQuantity}
                 label="капсул"
               />
-              <ProfileNumberField number={2} label="предметов" />
             </div>
           </>
         }
@@ -101,7 +119,7 @@ export function ProfileInfo({
             <MobileProfileInfo />
           </div>
         }
-        controls={controls}
+        controls={renderControls()}
         bio={
           <div className="text-sm font-medium max-w-80 truncate">
             {pageUser.bio}

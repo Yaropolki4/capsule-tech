@@ -20,6 +20,7 @@ interface RequestOptions {
   signal?: AbortSignal;
   withCredentials?: boolean;
   params?: {
+    searchParams?: Record<string, string | number>;
     withAuth?: boolean;
   };
 }
@@ -93,12 +94,19 @@ export class HttpTransport {
     );
 
     this.client.interceptors.request.use(async (config) => {
+      const newConfig = { ...config };
+      newConfig.params = { ...config.params?.searchParams };
+
       if (config.data instanceof FormData) {
-        config.headers["Content-Type"] = "multipart/form-data";
+        newConfig.headers["Content-Type"] = "multipart/form-data";
+      }
+
+      if (config.params?.searchParams) {
+        newConfig.params = config.params.searchParams;
       }
 
       if (!config.params?.withAuth) {
-        return config;
+        return newConfig;
       }
 
       if (this.adapter.isAccessTokenExpired()) {
@@ -115,9 +123,9 @@ export class HttpTransport {
         }
       }
 
-      config.headers.Authorization = `Bearer ${this.adapter.getAccessToken()}`;
+      newConfig.headers.Authorization = `Bearer ${this.adapter.getAccessToken()}`;
 
-      return config;
+      return newConfig;
     });
   }
 
@@ -185,10 +193,8 @@ export class HttpTransport {
       config.withCredentials = options.withCredentials;
     }
 
-    if (options?.params?.withAuth) {
-      config.params = {
-        withAuth: true,
-      };
+    if (options?.params) {
+      config.params = options.params;
     }
 
     return config;

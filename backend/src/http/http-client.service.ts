@@ -1,21 +1,25 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import * as FormData from 'form-data';
+import { cropServerUrlConfig } from 'src/config/env-config/load-config';
 
 @Injectable()
 export class HttpClientService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
+    @Inject(cropServerUrlConfig.KEY)
+    private readonly config: ConfigType<typeof cropServerUrlConfig>,
   ) {}
 
   async removeBackground(file: Express.Multer.File): Promise<Buffer> {
     try {
-      const pythonServerUrl = this.configService.getOrThrow<string>(
-        'PYTHON_CROP_SERVER_URL',
-      );
+      const cropServerUrl = this.config.url;
 
       const formData = new FormData();
       formData.append('file', Buffer.from(file.buffer), {
@@ -23,10 +27,8 @@ export class HttpClientService {
         contentType: file.mimetype,
       });
 
-      console.log(formData);
-
       const observable = this.httpService.post(
-        `${pythonServerUrl}/remove-bg`,
+        `${cropServerUrl}/remove-bg`,
         formData,
         {
           headers: {

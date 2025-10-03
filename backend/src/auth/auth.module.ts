@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { getJwtConfig } from 'src/config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
@@ -11,16 +11,18 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { UserModule } from 'src/user/user.module';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { JwtRefreshGuard } from './guards/jwt-refresh-guard';
+import { jwtConfig } from 'src/config/env-config/load-config';
 
 @Module({
   imports: [
     JwtModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule.forFeature(jwtConfig)],
       useFactory: getJwtConfig,
-      inject: [ConfigService],
+      inject: [jwtConfig.KEY],
     }),
     PrismaModule,
     forwardRef(() => UserModule),
+    ConfigModule.forFeature(jwtConfig),
   ],
   controllers: [AuthController],
   providers: [

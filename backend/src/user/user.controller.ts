@@ -48,30 +48,31 @@ export class UserController {
     }
 
     return {
-      id: user.id,
-      email: user.email,
-      bio: user.bio,
-      capsulesQuantity: user.capsulesQuantity,
-      fullName: user.fullName,
-      name: user.name,
+      ...user,
       avatarUrl: user.avatarUrl ?? undefined,
+      isSubscribed: false,
     };
   }
 
   @Get('by-name/:id')
-  public async get(@Param('id') id: string): Promise<GetUserByNameResponseDto> {
+  public async get(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<GetUserByNameResponseDto> {
     const user = await this.userRepository.findByName(id);
+    const currentUser = req.user as AccessTokenPayload;
 
     if (!user) {
       throw new NotFoundException();
     }
 
+    const isSubscribed = Boolean(
+      await this.userRepository.isSubscribed(currentUser.id, user.id),
+    );
+
     return {
-      id: user.id,
-      name: user.name,
-      fullName: user.fullName,
-      bio: user.bio,
-      capsulesQuantity: user.capsulesQuantity,
+      ...user,
+      isSubscribed,
       avatarUrl: user.avatarUrl ?? undefined,
     };
   }
@@ -127,7 +128,6 @@ export class UserController {
     file: Express.Multer.File,
   ) {
     const user = req.user as User;
-    console.log(file.mimetype);
 
     return await this.userService.updateAvatar(id, file, user.email);
   }

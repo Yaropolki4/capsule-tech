@@ -11,12 +11,21 @@
     "server:dev": "pnpm --filter @capsule/backend start:dev",
     "server": "pnpm --filter @capsule/backend start",
     "client:dev": "pnpm --filter @capsule/frontend dev",
-    "client": "pnpm --filter @capsule/frontend start"
+    "client": "pnpm --filter @capsule/frontend start",
+    "docker:build:frontend": "docker build -t capsule-frontend -f ./frontend/Dockerfile .",
+    "docker:run:frontend": "docker run -rm -p 3000:3000 capsule-frontend:latest",
+    "docker:build:server": "docker buildx build --ssh default=$HOME/.ssh/id_ed25519 --rm -t capsule-server -f ./backend/Dockerfile .",
+    "docker:run:server": "docker run --rm -p 5555:5555 capsule-server:latest",
+    "docker:run:frontend:debug": "docker run -it --rm -p 3000:3000 --entrypoint /bin/sh capsule-frontend:latest",
+    "docker:run:server:debug": "docker run -it --rm -p 5555:5555 --entrypoint /bin/sh capsule-server:latest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.7.3"
+  },
+  "prisma": {
+    "schema": "./backend/prisma/schema.prisma"
   }
 }

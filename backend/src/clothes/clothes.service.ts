@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { S3Service } from 'src/s3/s3.service';
 import {
   CreateClothesRequestDto,
@@ -6,16 +12,30 @@ import {
 } from '@capsule/common';
 import { UserRepository } from 'src/user/user.repository';
 import { ClothesRepository } from './clothes.repository';
-import { HttpClientService } from 'src/http/http-client.service';
+import { ClientGrpc } from '@nestjs/microservices';
+import {
+  ImageProcessingServiceClient,
+  IMAGE_PROCESSING_SERVICE_NAME,
+} from 'generated/proto/bg-remover';
+import { catchError, map } from 'rxjs';
 
 @Injectable()
-export class ClothesService {
+export class ClothesService implements OnModuleInit {
+  private bgRemoverService: ImageProcessingServiceClient;
+
   constructor(
     private readonly userRepository: UserRepository,
     private readonly s3Service: S3Service,
     private readonly clothesRepository: ClothesRepository,
-    private readonly httpClientService: HttpClientService,
+    @Inject('IMAGE_PROCESSING_SERVICE') private client: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.bgRemoverService =
+      this.client.getService<ImageProcessingServiceClient>(
+        IMAGE_PROCESSING_SERVICE_NAME,
+      );
+  }
 
   async create(
     createItemDto: CreateClothesRequestDto,
@@ -56,8 +76,21 @@ export class ClothesService {
     return await this.clothesRepository.getUserClothes(user.id);
   }
 
-  async removeBg(file: Express.Multer.File) {
-    return this.httpClientService.removeBackground(file);
+  async getUserClothes(userId: string) {
+    return await this.clothesRepository.getUserClothes(userId);
+  }
+
+  removeBg(file: Express.Multer.File) {
+    return this.bgRemoverService
+      .removeBackground({
+        imageData: file.buffer,
+      })
+      .pipe(
+        map((response) => response.processedImageData),
+        catchError(() => {
+          throw new InternalServerErrorException('Failed to remove background');
+        }),
+      );
   }
 
   findOne(id: number) {
@@ -65,8 +98,6 @@ export class ClothesService {
   }
 
   update(id: number, updateItemDto: UpdateClothesRequestDto) {
-    // TODO: Implement update logic
-    console.log('Updating item:', id, updateItemDto);
     return `This action updates a #${id} item`;
   }
 

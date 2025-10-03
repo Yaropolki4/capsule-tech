@@ -26,7 +26,6 @@ export class UserService {
     data: EditUserRequestDto & { avatarUrl?: string },
     email: string,
   ): Promise<EditUserResponseDto> {
-    console.log(userToUpdateName, data, email);
     const user = await this.userRepository.findByName(userToUpdateName);
 
     if (!user) {
@@ -56,11 +55,6 @@ export class UserService {
 
       return {
         name: updatedUser.name,
-        fullName: updatedUser.fullName,
-        bio: updatedUser.bio,
-        capsulesQuantity: updatedUser.capsulesQuantity,
-        avatarUrl: updatedUser.avatarUrl ?? undefined,
-        id: updatedUser.id,
       };
     }
 
@@ -75,11 +69,6 @@ export class UserService {
 
       return {
         name: updatedUser.name,
-        fullName: updatedUser.fullName,
-        bio: updatedUser.bio,
-        capsulesQuantity: updatedUser.capsulesQuantity,
-        avatarUrl: updatedUser.avatarUrl ?? undefined,
-        id: updatedUser.id,
       };
     }
 
@@ -97,11 +86,6 @@ export class UserService {
 
     return {
       name: updatedUser.name,
-      fullName: updatedUser.fullName,
-      bio: updatedUser.bio,
-      capsulesQuantity: updatedUser.capsulesQuantity,
-      avatarUrl: updatedUser.avatarUrl ?? undefined,
-      id: updatedUser.id,
     };
   }
 

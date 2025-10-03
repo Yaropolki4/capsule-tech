@@ -1,9 +1,9 @@
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
+import { jwtConfig } from './env-config/load-config';
 
-// eslint-disable-next-line @typescript-eslint/require-await
-export async function getJwtConfig(configService: ConfigService) {
+export function getJwtConfig(config: ConfigType<typeof jwtConfig>) {
   return {
-    secret: configService.getOrThrow<string>('JWT_SECRET'),
+    secret: config.secret,
     verifyOptions: {
       ignoreExpiration: false,
     },

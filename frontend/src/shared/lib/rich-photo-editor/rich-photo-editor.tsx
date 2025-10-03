@@ -33,12 +33,11 @@ export function RichPhotoEditor({
       ref={imageContainerRef}
       className="grow relative flex items-center justify-center border border-border"
     >
-      <div className="absolute w-full h-full flex items-center justify-center">
+      <div
+        className="absolute w-full h-full flex items-center justify-center"
+        style={{ aspectRatio: aspectRatio }}
+      >
         {renderMask({ width, height })}
-        <div
-          className="absolute h-full border border-primary border-dashed pointer-events-none"
-          style={{ aspectRatio: aspectRatio }}
-        />
         {url ? (
           <>
             {image && width && height && (

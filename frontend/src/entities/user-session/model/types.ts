@@ -11,10 +11,14 @@ export type RegisterData = {
 };
 
 export type User = {
+  id: string;
   email: string;
   name: string;
   fullName: string;
   bio: string;
   capsulesQuantity: number;
   avatarUrl?: string;
+  followersCount: number;
+  followingCount: number;
+  isSubscribed: boolean;
 };

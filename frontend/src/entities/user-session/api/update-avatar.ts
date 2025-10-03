@@ -14,6 +14,9 @@ export const updateAvatar = async (id: string, file: File) => {
       }),
     };
   } catch (error) {
-    console.error(error);
+    return {
+      data: null,
+      error: error,
+    };
   }
 };

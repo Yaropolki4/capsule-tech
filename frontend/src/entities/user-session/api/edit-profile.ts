@@ -7,15 +7,11 @@ import {
 import type { User } from "../model/types";
 import { HttpError } from "@/shared/api/http-error";
 
-function deserializeEditProfileData(data: unknown): Omit<User, "email"> {
+function deserializeEditProfileData(data: unknown): Pick<User, "name"> {
   const response = editUserResponseDtoSchema.parse(data);
 
   return {
     name: response.name,
-    bio: response.bio,
-    fullName: response.fullName,
-    capsulesQuantity: response.capsulesQuantity,
-    avatarUrl: response.avatarUrl,
   };
 }
 
@@ -27,7 +23,7 @@ export async function editProfile(
   username: string,
   data: FormData
 ): Promise<
-  | { error: null; data: Omit<User, "email"> }
+  | { error: null; data: Pick<User, "name"> }
   | {
       error: {
         cause: EditUserErrorDto["cause"] | "server";

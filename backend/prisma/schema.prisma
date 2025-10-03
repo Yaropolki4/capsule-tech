@@ -17,6 +17,12 @@ model User {
   avatarUrl String? @map("avatar_url")
   fullName String @map("full_name")
 
+  followersCount Int @default(0) @map("followers_count")
+  followingCount Int @default(0) @map("following_count")
+
+  followings Subscription[] @relation("follower")
+  followers Subscription[] @relation("following")
+
   name      String @unique
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -24,6 +30,19 @@ model User {
   items Clothes[] 
 
   @@map("users")
+}
+
+model Subscription {
+  follower User @relation("follower", fields: [followerId], references: [id])
+  followerId String
+
+  following User @relation("following", fields: [followingId], references: [id])
+  followingId String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("subscriptions")
+
+  @@id([followerId, followingId])
 }
 
 model Clothes {

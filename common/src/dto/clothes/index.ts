@@ -4,3 +4,4 @@ export * from "./create-clothes-response.dto";
 export * from "./get-clothes-response.dto";
 export type { ClothesCategory } from "./shared";
 export { clothesCategorySchema } from "./shared";
+export * from "./get-clothes-request.dto";

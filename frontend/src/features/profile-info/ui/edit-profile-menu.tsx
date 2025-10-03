@@ -13,7 +13,7 @@ import {
 import { Input } from "@/shared/ui/ui/input";
 import { Label } from "@/shared/ui/ui/label";
 import { TextCell } from "@/shared/ui/ui/text-cell";
-import { EDIT_USER_ERROR_CAUSES } from "@capsule/common/dist/src/dto/user/edit-user-error.dto";
+import { EDIT_USER_ERROR_CAUSES } from "@capsule/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -105,10 +105,7 @@ export function EditProfileMenu({
     }
   }
 
-  async function processSuccess(
-    editedUser: Omit<User, "email">,
-    oldUser: User
-  ) {
+  async function processSuccess(editedUser: Pick<User, "name">, oldUser: User) {
     setUser({
       ...oldUser,
       ...editedUser,

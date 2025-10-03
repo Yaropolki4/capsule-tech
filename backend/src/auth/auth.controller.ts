@@ -37,7 +37,12 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<LoginDtoResponse> {
     const token = this.authService.login(req.user as AccessTokenPayload);
-    this.authService.setRefreshToken(req.user as AccessTokenPayload, res);
+    const { refreshToken, cookieParams } = this.authService.getRefreshToken(
+      req.user as AccessTokenPayload,
+    );
+
+    res.cookie('refresh_token', refreshToken, cookieParams);
+
     const user = await this.userRepository.findByEmail(
       (req.user as AccessTokenPayload).email,
     );
@@ -56,6 +61,9 @@ export class AuthController {
         bio: user.bio,
         capsulesQuantity: user.capsulesQuantity,
         id: user.id,
+        followersCount: user.followersCount,
+        followingCount: user.followingCount,
+        isSubscribed: false,
       },
     };
   }
@@ -74,7 +82,9 @@ export class AuthController {
     });
 
     const token = this.authService.login(user);
-    this.authService.setRefreshToken(user, res);
+    const { refreshToken, cookieParams } =
+      this.authService.getRefreshToken(user);
+    res.cookie('refresh_token', refreshToken, cookieParams);
 
     return {
       ...token,
@@ -86,6 +96,9 @@ export class AuthController {
         bio: user.bio,
         capsulesQuantity: user.capsulesQuantity,
         id: user.id,
+        followersCount: user.followersCount,
+        followingCount: user.followingCount,
+        isSubscribed: false,
       },
     };
   }
@@ -110,7 +123,11 @@ export class AuthController {
     }
 
     const token = this.authService.login(req.user as AccessTokenPayload);
-    this.authService.setRefreshToken(req.user as AccessTokenPayload, res);
+    const { refreshToken, cookieParams } = this.authService.getRefreshToken(
+      req.user as AccessTokenPayload,
+    );
+
+    res.cookie('refresh_token', refreshToken, cookieParams);
 
     return token;
   }

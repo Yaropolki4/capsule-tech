@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useEffect } from "react";
 
 export function BaseVirtualList<T>({
   items,
@@ -8,6 +9,7 @@ export function BaseVirtualList<T>({
   lanes,
   parentRef,
   className,
+  aspectRatio,
 }: {
   items: Array<T>;
   renderItem: (item: T) => React.ReactNode;
@@ -15,14 +17,19 @@ export function BaseVirtualList<T>({
   lanes: number;
   parentRef: React.RefObject<HTMLDivElement | null>;
   className?: string;
+  aspectRatio?: number;
 }) {
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 500,
+    estimateSize: () => 40,
     overscan: 8,
     lanes,
   });
+
+  useEffect(() => {
+    rowVirtualizer.measure();
+  }, []);
 
   return (
     <div
@@ -31,7 +38,12 @@ export function BaseVirtualList<T>({
       }}
       className={cn("relative w-full", className)}
     >
-      <div className="w-full h-full relative">
+      <div
+        className="w-full h-full absolute top-0 left-0"
+        style={{
+          transform: `translateY(${rowVirtualizer.getVirtualItems()[0]?.start ?? 0}px)`,
+        }}
+      >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
           return (
             <div
@@ -44,7 +56,7 @@ export function BaseVirtualList<T>({
                 width: `${100 / lanes}%`,
                 transform: `translateY(${virtualRow.start}px)`,
                 boxSizing: "border-box",
-                aspectRatio: 3 / 4,
+                aspectRatio: aspectRatio,
               }}
               data-index={virtualRow.index}
             >

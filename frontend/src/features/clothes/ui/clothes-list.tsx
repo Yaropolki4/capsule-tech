@@ -1,8 +1,10 @@
-import { useMyClothes } from "@/entities/clothes";
+import { useClothes } from "@/entities/clothes";
 import { BaseVirtualList } from "@/shared/ui/ui/base-virtual-list";
 import type { Clothes } from "../model/types";
 import Image from "next/image";
 import { Skeleton } from "@/shared/ui/ui/skeleton";
+import { usePageUser } from "@/shared/providers/page-user/page-user-context";
+import { useUser } from "@/entities/user-session";
 
 export function ClothesList({
   parentRef,
@@ -25,7 +27,18 @@ export function ClothesList({
       </div>
     );
   };
-  const { data, isLoading, error } = useMyClothes();
+  const pageUserName = usePageUser();
+
+  const {
+    data: pageUserData,
+    isLoading: pageUserIsLoading,
+    error: pageUserError,
+  } = useUser(pageUserName);
+
+  const { data, isLoading, error } = useClothes(
+    pageUserData?.data?.id,
+    !pageUserIsLoading
+  );
 
   if (isLoading) {
     return (
@@ -42,8 +55,8 @@ export function ClothesList({
     );
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
+  if (error || pageUserError) {
+    return <div>Error: {error?.message || pageUserError?.message}</div>;
   }
 
   return data && data.length > 0 ? (
@@ -54,6 +67,7 @@ export function ClothesList({
       renderItem={renderItem}
       getItemKey={(item) => item.imageUrl}
       lanes={lanes}
+      aspectRatio={3 / 4}
     />
   ) : (
     <div>No clothes</div>

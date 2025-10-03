@@ -25,10 +25,26 @@ const ASPECT_RATIO = 1 / 1;
 export function EditPhotoEditor({ image }: { image: File | null }) {
   const renderMask = ({ width, height }: { width: number; height: number }) => {
     return (
-      <div
-        style={{ width, height }}
-        className="absolute rounded-full pointer-events-none border border-primary border-dashed"
-      />
+      <>
+        <div
+          className="overflow-hidden blur-2xl absolute w-full h-full pointer-events-none"
+          style={{
+            maskImage: `radial-gradient(circle closest-side at 50% 50%, transparent ${100}%, black ${100}%)`,
+            backdropFilter: "blur(20px)",
+            aspectRatio: ASPECT_RATIO,
+            width: width,
+            height: height,
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none border border-primary border-dashed"
+          style={{
+            aspectRatio: ASPECT_RATIO,
+            width: Math.min(width, height),
+            height: Math.min(width, height),
+          }}
+        />
+      </>
     );
   };
 

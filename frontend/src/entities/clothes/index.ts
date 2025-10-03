@@ -1,3 +1,3 @@
 export { createClothes } from "./api/create-clothes";
-export { useMyClothes } from "./model/useMyClothes";
+export { useClothes } from "./model/useClothes";
 export { removeBackground } from "./api/remove-background";

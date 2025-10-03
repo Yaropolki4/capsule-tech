@@ -3,11 +3,12 @@ import { getClothes } from "../api/get-clothes";
 
 const STALE_TIME = 1000 * 60 * 5;
 
-export function useMyClothes() {
+export function useClothes(userId: Maybe<string>, enabled: boolean = true) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["my-clothes"],
-    queryFn: () => getClothes(),
+    queryKey: ["clothes", userId],
+    queryFn: () => getClothes(userId ?? ""),
     staleTime: STALE_TIME,
+    enabled,
   });
 
   return { data, isLoading, error };

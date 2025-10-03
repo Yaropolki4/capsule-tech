@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    container_name: my_postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: zxc12zxc12
+      POSTGRES_DB: test
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+      ssh:
+        - default=${HOME}/.ssh/id_ed25519
+    container_name: capsule-backend
+    restart: always
+    ports:
+      - "5555:5555"
+    environment:
+      DATABASE_URI: "postgresql://postgres:zxc12zxc12@db:5432/test"
+      NODE_ENV: production
+      PORT: 5555
+    env_file:
+      - backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prisma-studio:
+    image: node:lts-alpine3.17
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: npx prisma studio --port 5556 --browser none
+    ports:
+      - "5556:5556"
+    env_file:
+      - backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    container_name: capsule-frontend
+    restart: always
+    environment:
+      PORT: 4000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "4000:4000"
+
+volumes:
+  postgres_data:
