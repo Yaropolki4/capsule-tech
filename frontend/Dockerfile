@@ -16,6 +16,7 @@ RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_API_URL
 COPY frontend ./frontend
 COPY common ./common
 COPY package.json ./
