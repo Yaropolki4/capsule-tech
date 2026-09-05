@@ -50,6 +50,7 @@ export class UserController {
     return {
       ...user,
       avatarUrl: user.avatarUrl ?? undefined,
+      gender: user.gender ?? undefined,
       isSubscribed: false,
     };
   }
@@ -74,6 +75,7 @@ export class UserController {
       ...user,
       isSubscribed,
       avatarUrl: user.avatarUrl ?? undefined,
+      gender: user.gender ?? undefined,
     };
   }
 

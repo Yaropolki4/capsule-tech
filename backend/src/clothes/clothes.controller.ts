@@ -10,6 +10,8 @@ import {
   UseInterceptors,
   UseGuards,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ClothesService } from './clothes.service';
 import type { Request } from 'express';
@@ -17,8 +19,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { ZodValidationPipe } from 'src/shared/validation/zod-validation.pipe';
 import {
-  createClothesRequestDtoSchema,
-  CreateClothesRequestDto,
+  createClothesFromWildberriesRequestDtoSchema,
+  CreateClothesFromWildberriesRequestDto,
   UpdateClothesRequestDto,
   CreateClothesResponseDto,
   GetClothesResponseDto,
@@ -36,50 +38,53 @@ export class ClothesController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async create(
-    @Body(new ZodValidationPipe(createClothesRequestDtoSchema))
-    createItemDto: CreateClothesRequestDto,
     @Req() req: Request,
     @ValidatedUploadedFile()
     file: Express.Multer.File,
   ): Promise<CreateClothesResponseDto> {
     const user = req.user as AccessTokenPayload;
 
-    const item = await this.clothesService.create(
-      createItemDto,
-      user.email,
-      file,
-    );
+    const item = await this.clothesService.create(user.email, file);
 
     return {
+      id: item.id,
       brand: item.brand,
       category: item.category,
       imageUrl: item.imageUrl,
       createdById: item.createdById,
+      sourceUrl: item.sourceUrl,
+    };
+  }
+
+  @Post('from-wildberries')
+  async createFromWildberries(
+    @Body(new ZodValidationPipe(createClothesFromWildberriesRequestDtoSchema))
+    createItemDto: CreateClothesFromWildberriesRequestDto,
+    @Req() req: Request,
+  ): Promise<CreateClothesResponseDto> {
+    const user = req.user as AccessTokenPayload;
+
+    const item = await this.clothesService.createFromWildberries(
+      createItemDto,
+      user.id,
+    );
+
+    return {
+      id: item.id,
+      brand: item.brand,
+      category: item.category,
+      imageUrl: item.imageUrl,
+      createdById: item.createdById,
+      sourceUrl: item.sourceUrl,
     };
   }
 
   @Get()
-  async findAll(
+  findAll(
     @Query(new ZodValidationPipe(getClothesRequestDtoSchema))
     { userId }: GetClothesRequestDto,
   ): Promise<GetClothesResponseDto> {
-    return (await this.clothesService.getUserClothes(userId)).map(
-      (clothes) => ({
-        brand: clothes.brand,
-        category: clothes.category,
-        imageUrl: clothes.imageUrl,
-        createdById: clothes.createdById,
-      }),
-    );
-  }
-
-  @Post('remove-bg')
-  @UseInterceptors(FileInterceptor('file'))
-  removeBg(
-    @ValidatedUploadedFile()
-    file: Express.Multer.File,
-  ) {
-    return this.clothesService.removeBg(file);
+    return this.clothesService.getUserClothes(userId);
   }
 
   @Get(':id')
@@ -96,7 +101,20 @@ export class ClothesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clothesService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as AccessTokenPayload;
+
+    return this.clothesService.remove(id, user.id);
+  }
+
+  @Post(':id/wardrobe')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async addToWardrobe(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req.user as AccessTokenPayload;
+
+    await this.clothesService.addToWardrobe(id, user.id);
   }
 }

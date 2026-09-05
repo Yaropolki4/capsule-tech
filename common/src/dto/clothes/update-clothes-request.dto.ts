@@ -1,8 +1,10 @@
 import { z } from "zod";
-import { createClothesRequestDtoSchema } from "./create-clothes-request.dto";
+import { clothesCategorySchema } from "./shared";
 
-export const updateClothesRequestDtoSchema =
-  createClothesRequestDtoSchema.partial();
+export const updateClothesRequestDtoSchema = z.object({
+  brand: z.string().min(1, "Бренд должен быть минимальной длины 1 символ"),
+  category: clothesCategorySchema,
+}).partial();
 
 export type UpdateClothesRequestDto = z.infer<
   typeof updateClothesRequestDtoSchema

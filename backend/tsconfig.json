@@ -21,6 +21,9 @@
       "@capsule/common": ["../common/dist/index"]
     }
   },
-  "include": ["src/**/*", "index.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "index.ts", "scripts/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    "files": true
+  }
 }

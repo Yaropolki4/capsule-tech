@@ -15,6 +15,10 @@ import { s3Config } from 'src/config/env-config/load-config';
 const paths = {
   avatar: 'avatars',
   clothes: 'clothes',
+  capsuleThumbnails: 'capsule-thumbnails',
+  capsuleStyled: 'capsule-styled',
+  userPhotos: 'user-photos',
+  tryOnResults: 'try-on-results',
 };
 
 @Injectable()
@@ -105,6 +109,134 @@ export class S3Service {
       );
 
       return `${this.endpoint}/${this.bucket}/${paths.clothes}/${file}`;
+    } catch {
+      throw new InternalServerErrorException(
+        'Не удалось загрузить изображение',
+      );
+    }
+  }
+
+  async uploadCapsuleThumbnail(
+    filename: string,
+    buffer: Buffer,
+    mimetype: string,
+  ) {
+    try {
+      const fileExtension = getFileExtension(mimetype);
+
+      if (!fileExtension) {
+        throw new InternalServerErrorException({
+          message: 'Ошибка расширения файла',
+          cause: 'file',
+        });
+      }
+
+      const file = `${filename}.${fileExtension}`;
+
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: `${paths.capsuleThumbnails}/${file}`,
+          Body: buffer,
+          ContentType: mimetype,
+        }),
+      );
+
+      return `${this.endpoint}/${this.bucket}/${paths.capsuleThumbnails}/${file}`;
+    } catch {
+      throw new InternalServerErrorException(
+        'Не удалось загрузить изображение',
+      );
+    }
+  }
+
+  async uploadCapsuleStyled(
+    filename: string,
+    buffer: Buffer,
+    mimetype: string,
+  ) {
+    try {
+      const fileExtension = getFileExtension(mimetype);
+
+      if (!fileExtension) {
+        throw new InternalServerErrorException({
+          message: 'Ошибка расширения файла',
+          cause: 'file',
+        });
+      }
+
+      const file = `${filename}.${fileExtension}`;
+
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: `${paths.capsuleStyled}/${file}`,
+          Body: buffer,
+          ContentType: mimetype,
+        }),
+      );
+
+      return `${this.endpoint}/${this.bucket}/${paths.capsuleStyled}/${file}`;
+    } catch {
+      throw new InternalServerErrorException(
+        'Не удалось загрузить изображение',
+      );
+    }
+  }
+
+  async uploadUserPhoto(filename: string, buffer: Buffer, mimetype: string) {
+    try {
+      const fileExtension = getFileExtension(mimetype);
+
+      if (!fileExtension) {
+        throw new InternalServerErrorException({
+          message: 'Ошибка расширения файла',
+          cause: 'file',
+        });
+      }
+
+      const file = `${filename}.${fileExtension}`;
+
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: `${paths.userPhotos}/${file}`,
+          Body: buffer,
+          ContentType: mimetype,
+        }),
+      );
+
+      return `${this.endpoint}/${this.bucket}/${paths.userPhotos}/${file}`;
+    } catch {
+      throw new InternalServerErrorException(
+        'Не удалось загрузить изображение',
+      );
+    }
+  }
+
+  async uploadTryOnResult(filename: string, buffer: Buffer, mimetype: string) {
+    try {
+      const fileExtension = getFileExtension(mimetype);
+
+      if (!fileExtension) {
+        throw new InternalServerErrorException({
+          message: 'Ошибка расширения файла',
+          cause: 'file',
+        });
+      }
+
+      const file = `${filename}.${fileExtension}`;
+
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: `${paths.tryOnResults}/${file}`,
+          Body: buffer,
+          ContentType: mimetype,
+        }),
+      );
+
+      return `${this.endpoint}/${this.bucket}/${paths.tryOnResults}/${file}`;
     } catch {
       throw new InternalServerErrorException(
         'Не удалось загрузить изображение',

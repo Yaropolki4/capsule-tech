@@ -6,7 +6,7 @@ import { AuthProvider } from "@/shared/providers/auth-provider";
 import { useCurrentUser } from "@/entities/user-session";
 import { AuthListener } from "./auth-listener";
 import { NotAuthWrapper } from "./not-auth-wrapper";
-import { Sidebar } from "./sidebar";
+import { Sidebar } from "./sidebar/sidebar";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/shared/query-client";
 import { ModalProvider } from "@/shared/lib/modal/modal-provider";
@@ -25,7 +25,7 @@ export function RootProvider({ children }: { children: React.ReactNode }) {
           <AuthProvider isAuthenticated={Boolean(user)}>
             <AuthListener>
               <NotAuthWrapper>
-                <Sidebar />
+                {user && <Sidebar />}
                 {children}
               </NotAuthWrapper>
             </AuthListener>

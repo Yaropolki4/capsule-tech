@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { genderSchema } from "../shared/user";
 
 export type RegisterDtoRequest = z.infer<typeof registerDtoRequestSchema>;
 
 export const registerDtoRequestSchema = z.object({
+  gender: genderSchema,
   name: z
     .string({ message: "Имя должно быть строкой" })
     .min(1, "Имя должно быть минимальной длины 1 символ")
@@ -10,7 +12,8 @@ export const registerDtoRequestSchema = z.object({
   fullName: z
     .string({ message: "Имя должно быть строкой" })
     .min(1, "Имя должно быть минимальной длины 1 символ")
-    .max(255, "Имя должно быть максимальной длины 255 символов"),
+    .max(255, "Имя должно быть максимальной длины 255 символов")
+    .optional(),
   email: z
     .email({ message: "Некорректный email" })
     .max(255, "Email должен быть максимальной длины 255 символов"),

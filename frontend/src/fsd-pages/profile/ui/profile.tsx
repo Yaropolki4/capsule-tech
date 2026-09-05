@@ -12,6 +12,8 @@ import {
   FollowersListModal,
 } from "@/features/subscribers-list";
 import { useModal } from "@/shared/lib/modal/use-modal";
+import { ServerError } from "@/shared/ui/ui/server-error";
+import { ProfileNotFound } from "./profile-not-found";
 
 export function Profile({ pageUserName }: { pageUserName: string }) {
   const { data, error, isLoading } = useUser(pageUserName);
@@ -21,16 +23,16 @@ export function Profile({ pageUserName }: { pageUserName: string }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const { openModal } = useModal();
 
-  if (!user || error) {
-    return <div>Unknown Error</div>;
-  }
-
-  if (parsedError?.cause === "server") {
-    return <div>Unknown Error</div>;
+  if (parsedError?.cause === "server" || error) {
+    return <ServerError />;
   }
 
   if (parsedError?.cause === "not_found" || (!user && !isLoading)) {
-    return <div>User not found</div>;
+    return <ProfileNotFound name={pageUserName} />;
+  }
+
+  if (!user) {
+    return <ServerError />;
   }
 
   return (

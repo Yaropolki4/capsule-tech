@@ -1,8 +1,5 @@
-"use client";
-
-import { logout } from "@/entities/user-session";
-import { Button } from "@/shared/ui/ui/button";
+import { Wall } from "@/fsd-pages/wall";
 
 export default function Home() {
-  return <Button onClick={() => logout()}>Logout</Button>;
+  return <Wall />;
 }

@@ -1,33 +1,41 @@
-import { useClothes } from "@/entities/clothes";
+import { useMemo } from "react";
+import { useClothes, mapCategoryToGroup, type CategoryGroup } from "@/entities/clothes";
 import { BaseVirtualList } from "@/shared/ui/ui/base-virtual-list";
 import type { Clothes } from "../model/types";
-import Image from "next/image";
 import { Skeleton } from "@/shared/ui/ui/skeleton";
 import { usePageUser } from "@/shared/providers/page-user/page-user-context";
-import { useUser } from "@/entities/user-session";
+import { useCurrentUser, useUser } from "@/entities/user-session";
+import { SelfEmptyClothes } from "./self-empty-clothes";
+import { EmptyClothes } from "./empty-clothes";
+import { ClothesItem } from "./clothes-item";
+import { useModal } from "@/shared/lib/modal/use-modal";
+import { ClothesInfo } from "./clothes-info";
 
 export function ClothesList({
   parentRef,
   lanes,
+  filterCategory,
+  searchQuery,
 }: {
   parentRef: React.RefObject<HTMLDivElement | null>;
   lanes: number;
+  filterCategory?: CategoryGroup;
+  searchQuery?: string;
 }) {
+  const { openModal } = useModal();
   const renderItem = (item: Clothes) => {
     return (
-      <div className="w-full h-full pl-0.5 pb-0.5">
-        <div className="w-full h-full">
-          <Image
-            src={item.imageUrl}
-            alt={item.brand}
-            width={1000}
-            height={1000}
-          />
-        </div>
-      </div>
+      <ClothesItem
+        item={item}
+        onClick={() => {
+          openModal({ Component: ClothesInfo, props: { clothes: item } });
+        }}
+      />
     );
   };
   const pageUserName = usePageUser();
+  const [currentUser] = useCurrentUser();
+  const isCurrentUser = currentUser?.name === pageUserName;
 
   const {
     data: pageUserData,
@@ -35,10 +43,27 @@ export function ClothesList({
     error: pageUserError,
   } = useUser(pageUserName);
 
-  const { data, isLoading, error } = useClothes(
+  const { data: allData, isLoading, error } = useClothes(
     pageUserData?.data?.id,
     !pageUserIsLoading
   );
+
+  const query = searchQuery?.trim().toLowerCase();
+
+  const data = useMemo(() => {
+    if (!allData) return allData;
+
+    return allData.filter((item) => {
+      const matchesCategory =
+        !filterCategory ||
+        filterCategory === "Все" ||
+        mapCategoryToGroup[item.category] === filterCategory;
+      const matchesQuery =
+        !query || (item.brand ?? "").toLowerCase().includes(query);
+
+      return matchesCategory && matchesQuery;
+    });
+  }, [allData, filterCategory, query]);
 
   if (isLoading) {
     return (
@@ -59,17 +84,32 @@ export function ClothesList({
     return <div>Error: {error?.message || pageUserError?.message}</div>;
   }
 
+  if (allData && allData.length > 0 && data && data.length === 0) {
+    return (
+      <div className="mt-10 text-center text-muted-foreground">
+        Ничего не найдено
+      </div>
+    );
+  }
+
   return data && data.length > 0 ? (
-    <BaseVirtualList
-      className="border-t border-border"
-      parentRef={parentRef}
-      items={data}
-      renderItem={renderItem}
-      getItemKey={(item) => item.imageUrl}
-      lanes={lanes}
-      aspectRatio={3 / 4}
-    />
+    <div className="border-t border-border pt-2">
+      <BaseVirtualList
+        parentRef={parentRef}
+        items={data}
+        renderItem={renderItem}
+        getItemKey={(item) => item.imageUrl}
+        lanes={lanes}
+        aspectRatio={3 / 4}
+      />
+    </div>
   ) : (
-    <div>No clothes</div>
+    <div className="mt-10">
+      {isCurrentUser ? (
+        <SelfEmptyClothes />
+      ) : (
+        <EmptyClothes userName={pageUserName} />
+      )}
+    </div>
   );
 }

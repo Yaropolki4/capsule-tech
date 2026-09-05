@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     restart: always
     container_name: my_postgres_db
     environment:
@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: zxc12zxc12
       POSTGRES_DB: test
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d
@@ -22,8 +22,6 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-      ssh:
-        - default=${HOME}/.ssh/id_ed25519
     container_name: capsule-backend
     restart: always
     ports:
@@ -43,7 +41,7 @@ services:
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-    command: npx prisma studio --port 5556 --browser none
+    command: npx prisma studio --port 5556 --browser none --schema ./backend/prisma/schema.prisma
     ports:
       - "5556:5556"
     env_file:

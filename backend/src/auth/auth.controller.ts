@@ -1,14 +1,19 @@
 import {
   Body,
   Controller,
+  Get,
   InternalServerErrorException,
+  Inject,
+  Logger,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { YandexAuthService } from './yandex-auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import {
@@ -18,16 +23,32 @@ import {
   LoginDtoResponse,
 } from '@capsule/common';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { AccessTokenPayload } from './types/access-token-payload';
 import { UserRepository } from 'src/user/user.repository';
 import { JwtRefresh } from './decorators/jwt-refresh.decorator';
 import { ZodValidationPipe } from 'src/shared/validation/zod-validation.pipe';
+import { ConfigType } from '@nestjs/config';
+import {
+  frontendConfig,
+  commonConfig,
+} from 'src/config/env-config/load-config';
+
+const YANDEX_STATE_COOKIE = 'yandex_oauth_state';
+const YANDEX_STATE_TTL_MS = 10 * 60 * 1000;
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
+    private readonly yandexAuthService: YandexAuthService,
     private readonly userRepository: UserRepository,
+    @Inject(frontendConfig.KEY)
+    private readonly frontendCfg: ConfigType<typeof frontendConfig>,
+    @Inject(commonConfig.KEY)
+    private readonly commonCfg: ConfigType<typeof commonConfig>,
   ) {}
 
   @Post('login')
@@ -61,6 +82,7 @@ export class AuthController {
         bio: user.bio,
         capsulesQuantity: user.capsulesQuantity,
         id: user.id,
+        gender: user.gender ?? undefined,
         followersCount: user.followersCount,
         followingCount: user.followingCount,
         isSubscribed: false,
@@ -78,6 +100,7 @@ export class AuthController {
       name: registerDto.name,
       fullName: registerDto.fullName,
       email: registerDto.email,
+      gender: registerDto.gender,
       password: await bcrypt.hash(registerDto.password, 10),
     });
 
@@ -96,11 +119,67 @@ export class AuthController {
         bio: user.bio,
         capsulesQuantity: user.capsulesQuantity,
         id: user.id,
+        gender: user.gender ?? undefined,
         followersCount: user.followersCount,
         followingCount: user.followingCount,
         isSubscribed: false,
       },
     };
+  }
+
+  @Get('yandex')
+  public redirectToYandex(@Res() res: Response) {
+    const state = randomBytes(16).toString('hex');
+
+    res.cookie(YANDEX_STATE_COOKIE, state, {
+      httpOnly: true,
+      secure: this.commonCfg.nodeEnv === 'production',
+      sameSite: 'lax',
+      maxAge: YANDEX_STATE_TTL_MS,
+      signed: true,
+    });
+
+    res.redirect(this.yandexAuthService.getAuthorizeUrl(state));
+  }
+
+  @Get('yandex/callback')
+  public async yandexCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const storedState = req.signedCookies?.[YANDEX_STATE_COOKIE] as
+      | string
+      | undefined;
+
+    res.clearCookie(YANDEX_STATE_COOKIE);
+
+    if (!code || !state || !storedState || state !== storedState) {
+      this.logger.error(
+        `Yandex OAuth: invalid state (code=${Boolean(code)}, state=${Boolean(state)}, storedState=${Boolean(storedState)})`,
+      );
+      res.redirect(`${this.frontendCfg.url}/?yandexError=1`);
+
+      return;
+    }
+
+    try {
+      const profile = await this.yandexAuthService.getProfile(code);
+      const user = await this.authService.loginOrRegisterWithYandex(profile);
+
+      const { refreshToken, cookieParams } =
+        this.authService.getRefreshToken(user);
+      res.cookie('refresh_token', refreshToken, cookieParams);
+
+      res.redirect(this.frontendCfg.url);
+    } catch (error) {
+      this.logger.error(
+        'Yandex OAuth callback failed',
+        error instanceof Error ? error.stack : error,
+      );
+      res.redirect(`${this.frontendCfg.url}/?yandexError=1`);
+    }
   }
 
   @Post('logout')

@@ -1,9 +1,29 @@
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/shared/providers/auth-context";
-import Image from "next/image";
 import { LoginForm } from "@/features/auth";
 import { usePathname } from "next/navigation";
 import { publicRoutes } from "@/shared/constants/routes";
+import { AuthScreen } from "@/shared/ui/auth-screen";
+
+const LOGIN_DECORATIONS = [
+  {
+    label: "пальто",
+    className: "top-[28%] left-[5%] h-[250px] w-[190px]",
+    animation: "float-a" as const,
+    image: "/login-page/1.webp",
+  },
+  {
+    label: "платье",
+    className: "top-[20%] right-[6%] h-[220px] w-[170px]",
+    animation: "float-b" as const,
+    image: "/login-page/2.webp",
+  },
+  {
+    label: "кроссовки",
+    className: "right-[12%] bottom-[10%] h-[190px] w-[150px]",
+    animation: "float-a" as const,
+    image: "/login-page/3.webp",
+  },
+];
 
 export function NotAuthWrapper({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -14,34 +34,9 @@ export function NotAuthWrapper({ children }: { children: React.ReactNode }) {
     !publicRoutes.includes(pathname as (typeof publicRoutes)[number])
   ) {
     return (
-      <main className="flex w-full h-full">
-        <section
-          className={cn(
-            "bg-secondary flex-1",
-            "border-r-2 border-border",
-            "md:flex max-md:hidden justify-center items-center flex-col"
-          )}
-        >
-          <p className="text-center text-4xl font-semibold mb-1">
-            Создавай. Комбинируй. Делись.
-          </p>
-          <p className="text-center text-4xl font-semibold mb-6">
-            Твой AI-стилист всегда рядом.
-          </p>
-          <Image
-            src="/images/auth-bg.png"
-            alt="Login Background"
-            width={300}
-            height={300}
-            priority
-          />
-        </section>
-        <section className="bg-background md:basis-[676px] max-md:flex-1 flex items-center justify-center">
-          <div className="px-12 w-full">
-            <LoginForm />
-          </div>
-        </section>
-      </main>
+      <AuthScreen decorations={LOGIN_DECORATIONS} gradient="left">
+        <LoginForm />
+      </AuthScreen>
     );
   }
 

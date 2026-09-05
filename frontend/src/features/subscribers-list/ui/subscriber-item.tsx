@@ -53,7 +53,7 @@ export const SubscriberItem = ({
         onClick();
       }}
     >
-      <div className="flex items-center justify-between w-full rounded-lg p-2 hover:bg-accent/30">
+      <div className="flex items-center justify-between w-full rounded-[var(--radius-card)] p-2 hover:bg-accent/30">
         <div className="flex items-center gap-4">
           <AvatarContainer url={subscriberData.avatarUrl} className="size-10" />
           <div className="text-lg font-medium">{subscriberData.name}</div>

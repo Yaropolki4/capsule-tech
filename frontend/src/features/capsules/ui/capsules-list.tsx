@@ -1,5 +1,15 @@
+"use client";
+
+import { useUserCapsules } from "@/entities/capsules";
+import type { Capsule } from "@/entities/capsules";
 import { BaseVirtualList } from "@/shared/ui/ui/base-virtual-list";
-import Image from "next/image";
+import { Skeleton } from "@/shared/ui/ui/skeleton";
+import { usePageUser } from "@/shared/providers/page-user/page-user-context";
+import { useCurrentUser, useUser } from "@/entities/user-session";
+import { CAPSULE_CANVAS_ASPECT_RATIO } from "@/shared/constants/capsule";
+import { SelfEmptyCapsules } from "./self-empty-capsules";
+import { EmptyCapsules } from "./empty-capsules";
+import { CapsuleItem } from "./capsule-item";
 
 export function CapsulesList({
   parentRef,
@@ -8,34 +18,59 @@ export function CapsulesList({
   parentRef: React.RefObject<HTMLDivElement | null>;
   lanes: number;
 }) {
-  return (
-    <BaseVirtualList
-      className="border-t border-border"
-      parentRef={parentRef}
-      items={[
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-        39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56,
-        57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
-        75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92,
-        93, 94, 95, 96, 97, 98, 99, 100,
-      ]}
-      aspectRatio={3 / 4}
-      renderItem={(item) => (
-        <div className="w-full h-full pl-0.5 pb-0.5">
-          <div className="w-full h-full">
-            <Image
-              src="/images/test-clothes.jpg"
-              alt="Profile Item"
-              width={1000}
-              height={1000}
-              className="w-full h-full object-cover"
+  const renderItem = (item: Capsule) => <CapsuleItem item={item} />;
+  const pageUserName = usePageUser();
+  const [currentUser] = useCurrentUser();
+  const isCurrentUser = currentUser?.name === pageUserName;
+
+  const {
+    data: pageUserData,
+    isLoading: pageUserIsLoading,
+    error: pageUserError,
+  } = useUser(pageUserName);
+
+  const { data, isLoading, error } = useUserCapsules(
+    pageUserData?.data?.id,
+    !pageUserIsLoading
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-wrap">
+        {new Array(20).fill(0).map((_, index) => (
+          <div key={index} className="pb-0.5 pl-0.5 w-1/3">
+            <Skeleton
+              className="w-full h-full"
+              style={{ aspectRatio: CAPSULE_CANVAS_ASPECT_RATIO }}
             />
           </div>
-        </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error || pageUserError) {
+    return <div>Error: {error?.message || pageUserError?.message}</div>;
+  }
+
+  return data && data.length > 0 ? (
+    <div className="border-t border-border pt-2">
+      <BaseVirtualList
+        parentRef={parentRef}
+        items={data}
+        renderItem={renderItem}
+        getItemKey={(item) => item.id}
+        lanes={lanes}
+        aspectRatio={CAPSULE_CANVAS_ASPECT_RATIO}
+      />
+    </div>
+  ) : (
+    <div className="mt-10">
+      {isCurrentUser ? (
+        <SelfEmptyCapsules />
+      ) : (
+        <EmptyCapsules userName={pageUserName} />
       )}
-      getItemKey={(item) => String(item)}
-      lanes={lanes}
-    />
+    </div>
   );
 }

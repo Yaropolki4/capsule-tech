@@ -1,61 +1,198 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URI")
+  provider   = "postgresql"
+  url        = env("DATABASE_URI")
+  extensions = [vector]
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  email     String   @unique
-  password  String?
-  bio    String   @default("")
-  capsulesQuantity Int @default(0) @map("capsules_quantity")
-  avatarUrl String? @map("avatar_url")
-  fullName String @map("full_name")
+  email            String  @unique
+  password         String?
+  bio              String  @default("")
+  capsulesQuantity Int     @default(0) @map("capsules_quantity")
+  avatarUrl        String? @map("avatar_url")
+  fullName         String  @map("full_name")
+  gender           Gender?
 
   followersCount Int @default(0) @map("followers_count")
   followingCount Int @default(0) @map("following_count")
 
   followings Subscription[] @relation("follower")
-  followers Subscription[] @relation("following")
+  followers  Subscription[] @relation("following")
 
-  name      String @unique
+  name String @unique
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  items Clothes[] 
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  items            Clothes[]
+  userClothes      UserClothes[]     @relation("user")
+  capsules         Capsule[]
+  posts            Post[]
+  postLikes        PostLike[]
+  chatThreads      ChatThread[]
+  userPhotos       UserPhoto[]
+  tryOns           TryOn[]
+  tokenBalances    TokenBalance[]
+  tokenUsageEvents TokenUsageEvent[]
 
   @@map("users")
 }
 
 model Subscription {
-  follower User @relation("follower", fields: [followerId], references: [id])
+  follower   User   @relation("follower", fields: [followerId], references: [id])
   followerId String
 
-  following User @relation("following", fields: [followingId], references: [id])
+  following   User     @relation("following", fields: [followingId], references: [id])
   followingId String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("subscriptions")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@id([followerId, followingId])
+  @@map("subscriptions")
 }
 
 model Clothes {
-  id        String   @id @default(uuid())
-  imageUrl  String
-  brand     String
-  category  ClothesCategory
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  createdBy User @relation(fields: [createdById], references: [id])
+  id          String          @id @default(uuid())
+  imageUrl    String
+  brand       String?
+  category    ClothesCategory
+  public      Boolean         @default(true) @map("public")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  createdBy   User            @relation(fields: [createdById], references: [id])
   createdById String
 
+  description      String?
+  source           ClothesSource                @default(USER_UPLOAD)
+  sourceUrl        String?                      @map("source_url")
+  generationPrompt String?                      @map("generation_prompt")
+  externalId       String?                      @unique @map("external_id")
+  embedding        Unsupported("vector(1536)")?
+
+  // Заполняются только для source = CATALOG | WEB — это кэш каталога/поиска
+  // Wildberries (см. src/catalog), а не метаданные вещи из личного гардероба.
+  name           String?
+  price          Float?
+  rating         Float?
+  feedbacksCount Int?    @map("feedbacks_count")
+
+  UserClothes  UserClothes[] @relation("clothes")
+  capsuleItems CapsuleItem[]
+  posts        Post[]
+  tryOns       TryOn[]
+
   @@map("clothes")
+}
+
+model UserClothes {
+  user      User     @relation("user", fields: [userId], references: [id])
+  userId    String
+  clothes   Clothes  @relation("clothes", fields: [clothesId], references: [id])
+  clothesId String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, clothesId])
+  @@map("user_clothes")
+}
+
+model Capsule {
+  id           String        @id @default(uuid())
+  name         String?
+  thumbnailUrl String        @map("thumbnail_url")
+  public       Boolean       @default(true)
+  createdBy    User          @relation(fields: [createdById], references: [id])
+  createdById  String        @map("created_by_id")
+  items        CapsuleItem[]
+  posts        Post[]
+  tryOns       TryOn[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("capsules")
+}
+
+model CapsuleItem {
+  id        String   @id @default(uuid())
+  capsule   Capsule  @relation(fields: [capsuleId], references: [id], onDelete: Cascade)
+  capsuleId String   @map("capsule_id")
+  clothes   Clothes  @relation(fields: [clothesId], references: [id], onDelete: Cascade)
+  clothesId String   @map("clothes_id")
+  x         Float
+  y         Float
+  rotation  Float    @default(0)
+  scale     Float    @default(1)
+  zIndex    Int      @map("z_index")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([capsuleId, clothesId])
+  @@map("capsule_items")
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  text        String?
+  createdBy   User       @relation(fields: [createdById], references: [id])
+  createdById String     @map("created_by_id")
+  capsule     Capsule?   @relation(fields: [capsuleId], references: [id], onDelete: Cascade)
+  capsuleId   String?    @map("capsule_id")
+  clothes     Clothes?   @relation(fields: [clothesId], references: [id], onDelete: Cascade)
+  clothesId   String?    @map("clothes_id")
+  likesCount  Int        @default(0) @map("likes_count")
+  likes       PostLike[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("posts")
+}
+
+model PostLike {
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String   @map("post_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([postId, userId])
+  @@map("post_likes")
+}
+
+model UserPhoto {
+  id        String   @id @default(uuid())
+  imageUrl  String   @map("image_url")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  tryOns    TryOn[]
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user_photos")
+}
+
+model TryOn {
+  id             String @id @default(uuid())
+  resultImageUrl String @map("result_image_url")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  userPhoto   UserPhoto @relation(fields: [userPhotoId], references: [id], onDelete: Cascade)
+  userPhotoId String    @map("user_photo_id")
+
+  capsule   Capsule? @relation(fields: [capsuleId], references: [id], onDelete: Cascade)
+  capsuleId String?  @map("capsule_id")
+
+  clothes   Clothes? @relation(fields: [clothesId], references: [id], onDelete: Cascade)
+  clothesId String?  @map("clothes_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("try_ons")
 }
 
 enum ClothesCategory {
@@ -75,4 +212,89 @@ enum ClothesCategory {
   UNDERWEAR
   SLEEPWEAR
   SWIMSUIT
+  TSHIRT
+  TOP
+  HOODIE
+  SWEATSHIRT
+  SWEATER
+  LONGSLEEVE
+  BLAZER
+}
+
+enum ClothesSource {
+  USER_UPLOAD
+  CATALOG
+  WEB
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model ChatThread {
+  id        String        @id @default(uuid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String        @map("user_id")
+  title     String?       @map("title")
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId, updatedAt])
+  @@map("chat_threads")
+}
+
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+}
+
+model ChatMessage {
+  id                         String          @id @default(uuid())
+  thread                     ChatThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId                   String          @map("thread_id")
+  role                       ChatMessageRole
+  text                       String
+  suggestionClothesIds       String[]        @default([]) @map("suggestion_clothes_ids")
+  suggestionWildberriesItems Json[]          @default([]) @map("suggestion_wildberries_items")
+  capsuleConcepts            Json[]          @default([]) @map("capsule_concepts")
+  capsuleProposal            Json?           @map("capsule_proposal")
+  createdAt                  DateTime        @default(now()) @map("created_at")
+
+  @@map("chat_messages")
+}
+
+enum TokenBucket {
+  CHAT
+  PHOTO
+}
+
+model TokenBalance {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String      @map("user_id")
+  bucket    TokenBucket
+  remaining Int
+  limit     Int
+  resetAt   DateTime    @map("reset_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@unique([userId, bucket])
+  @@map("token_balances")
+}
+
+model TokenUsageEvent {
+  id              String      @id @default(uuid())
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String      @map("user_id")
+  bucket          TokenBucket
+  action          String
+  model           String
+  providerCostUsd Float       @map("provider_cost_usd")
+  tokensCharged   Int         @map("tokens_charged")
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("token_usage_events")
 }

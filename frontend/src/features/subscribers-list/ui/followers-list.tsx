@@ -10,6 +10,7 @@ export const FollowersList = ({
   userId,
   renderActions,
   onClick,
+  searchQuery,
 }: {
   userId: string;
   renderActions: (
@@ -21,9 +22,13 @@ export const FollowersList = ({
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
   ) => React.ReactNode;
   onClick: () => void;
+  searchQuery?: string;
 }) => {
   const { data: items, isLoading, error } = useFollowers(userId);
   const router = useRouter();
+  const filteredItems = (items ?? EMPTY_ITEMS).filter((item) =>
+    item.name.toLowerCase().includes((searchQuery ?? "").toLowerCase())
+  );
   const renderItem = (item: Subscriber) => {
     return (
       <SubscriberItem
@@ -50,7 +55,7 @@ export const FollowersList = ({
 
   return (
     <OneLaneVirtualList
-      items={items ?? EMPTY_ITEMS}
+      items={filteredItems}
       renderItem={renderItem}
       getItemKey={getItemKey}
     />

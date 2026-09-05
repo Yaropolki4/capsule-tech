@@ -3,10 +3,12 @@ import { clothesCategorySchema } from "./shared";
 
 export const getClothesResponseDtoSchema = z.array(
   z.object({
-    brand: z.string().min(1, "Бренд должен быть минимальной длины 1 символ"),
+    brand: z.string().nullable(),
     category: clothesCategorySchema,
     imageUrl: z.string(),
     createdById: z.string(),
+    id: z.string(),
+    sourceUrl: z.string().nullable(),
   })
 );
 

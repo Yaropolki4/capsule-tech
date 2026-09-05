@@ -1,11 +1,14 @@
 "use client";
 
+import { Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { AvatarContainer } from "@/shared/ui/ui/avatar";
 import { Button } from "@/shared/ui/ui/button";
 import { ProfileNumberField } from "../ui/profile-number-field";
 import { ProfileInfoLayout } from "../ui/profile-info-layout";
 import { Skeleton } from "@/shared/ui/ui/skeleton";
 import { useCurrentUser, type User } from "@/entities/user-session";
+import { useClothes } from "@/entities/clothes";
 import { EditProfileMenu } from "../ui/edit-profile-menu";
 import { useModal } from "@/shared/lib/modal/use-modal";
 import { MobileProfileInfo } from "../ui/mobile-profile-info";
@@ -27,6 +30,29 @@ export function ProfileInfo({
   const [currentUser] = useCurrentUser();
   const { openModal } = useModal();
   const pageUserName = usePageUser();
+  const { data: pageUserClothes } = useClothes(pageUser?.id);
+  const itemsCount = pageUserClothes?.length ?? 0;
+
+  const shareButton = (
+    <Button
+      variant="outline"
+      onClick={async () => {
+        const url = window.location.href;
+
+        if (navigator.share) {
+          navigator.share({ url }).catch(() => {});
+
+          return;
+        }
+
+        await navigator.clipboard.writeText(url);
+        toast.success("Ссылка скопирована");
+      }}
+    >
+      <Share2 />
+      Поделиться
+    </Button>
+  );
 
   if (isLoading) {
     return (
@@ -64,24 +90,32 @@ export function ProfileInfo({
   const renderControls = () => {
     if (ownProfile) {
       return (
-        <Button
-          onClick={() => {
-            openModal({
-              Component: EditProfileMenu,
-              props: {
-                name: pageUser.name,
-                bio: pageUser.bio,
-              },
-            });
-          }}
-          variant="outline"
-        >
-          Редактировать профиль
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => {
+              openModal({
+                Component: EditProfileMenu,
+                props: {
+                  name: pageUser.name,
+                  bio: pageUser.bio,
+                },
+              });
+            }}
+            variant="outline"
+          >
+            Редактировать профиль
+          </Button>
+          {shareButton}
+        </div>
       );
     }
 
-    return manageSubscriptionButton;
+    return (
+      <div className="flex items-center gap-2">
+        {manageSubscriptionButton}
+        {shareButton}
+      </div>
+    );
   };
 
   return (
@@ -111,12 +145,20 @@ export function ProfileInfo({
                 number={pageUser.capsulesQuantity}
                 label="капсул"
               />
+              <ProfileNumberField number={itemsCount} label="вещей" />
             </div>
           </>
         }
         mobileInfo={
           <div className="max-md:block hidden w-full">
-            <MobileProfileInfo />
+            <MobileProfileInfo
+              onSubscribersCountClick={onSubscribersCountClick}
+              onFollowingsCountClick={onFollowingsCountClick}
+              capsulesQuantity={pageUser.capsulesQuantity}
+              followersCount={pageUser.followersCount}
+              followingCount={pageUser.followingCount}
+              itemsCount={itemsCount}
+            />
           </div>
         }
         controls={renderControls()}

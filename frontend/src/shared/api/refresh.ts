@@ -3,12 +3,12 @@ import type { AccessToken } from "./types";
 import { sessionStore } from "./session.store";
 
 const refreshResponseSchema = z.object({
-  access_token: z.string(),
+  accessToken: z.string(),
 });
 
 const deserializeRefreshData = (data: unknown): AccessToken => {
   return {
-    accessToken: refreshResponseSchema.parse(data).access_token,
+    accessToken: refreshResponseSchema.parse(data).accessToken,
   };
 };
 

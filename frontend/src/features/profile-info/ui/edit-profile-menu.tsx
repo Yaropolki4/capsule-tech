@@ -3,6 +3,7 @@ import { editProfile, useCurrentUser, useUser } from "@/entities/user-session";
 import { cn } from "@/lib/utils";
 import { routes } from "@/shared/constants/routes";
 import { useModal } from "@/shared/lib/modal/use-modal";
+import { ensureBrowserDecodableImage } from "@/shared/lib/image/heic";
 import { Button } from "@/shared/ui/ui/button";
 import {
   DialogContent,
@@ -189,15 +190,15 @@ export function EditProfileMenu({
               className="hidden"
               id="file"
               type="file"
-              accept="image/png,image/jpeg,image/jpg"
+              accept="image/png,image/jpeg,image/jpg,image/heic,image/heif"
               ref={inputRef}
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files?.[0] ?? null;
 
                 openModal({
                   Component: EditPhotoEditor,
                   props: {
-                    image: file,
+                    image: file ? await ensureBrowserDecodableImage(file) : file,
                   },
                 });
               }}

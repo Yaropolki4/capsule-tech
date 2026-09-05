@@ -6,10 +6,12 @@ function deserializeClothes(clothes: unknown): Clothes {
   const parsed = createClothesResponseDtoSchema.parse(clothes);
 
   return {
+    id: parsed.id,
     brand: parsed.brand,
     category: parsed.category,
     imageUrl: parsed.imageUrl,
     createdById: parsed.createdById,
+    sourceUrl: parsed.sourceUrl,
   };
 }
 

@@ -22,6 +22,7 @@ export function BaseVirtualList<T>({
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
+    getItemKey: (index) => getItemKey(items[index]),
     estimateSize: () => 40,
     overscan: 8,
     lanes,
@@ -30,6 +31,9 @@ export function BaseVirtualList<T>({
   useEffect(() => {
     rowVirtualizer.measure();
   }, []);
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const baseOffset = virtualItems[0]?.start ?? 0;
 
   return (
     <div
@@ -41,10 +45,10 @@ export function BaseVirtualList<T>({
       <div
         className="w-full h-full absolute top-0 left-0"
         style={{
-          transform: `translateY(${rowVirtualizer.getVirtualItems()[0]?.start ?? 0}px)`,
+          transform: `translateY(${baseOffset}px)`,
         }}
       >
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+        {virtualItems.map((virtualRow) => {
           return (
             <div
               ref={rowVirtualizer.measureElement}
@@ -54,7 +58,7 @@ export function BaseVirtualList<T>({
                 top: 0,
                 left: `${virtualRow.lane * (100 / lanes)}%`,
                 width: `${100 / lanes}%`,
-                transform: `translateY(${virtualRow.start}px)`,
+                transform: `translateY(${virtualRow.start - baseOffset}px)`,
                 boxSizing: "border-box",
                 aspectRatio: aspectRatio,
               }}

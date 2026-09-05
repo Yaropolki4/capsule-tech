@@ -17,13 +17,13 @@ export function ProfileInfoLayout({
 }: ProfileInfoProps) {
   return (
     <>
-      <div className="flex mt-10 max-md:mt-0">
-        <div className="max-md:mx-10 max-md:ml-0 mx-16 flex justify-center items-center">
+      <div className="flex mt-10 max-md:mt-0 max-md:flex-col max-md:items-center max-md:text-center">
+        <div className="mx-16 max-md:mx-0 max-md:mb-3 flex justify-center items-center">
           {avatar}
         </div>
-        <div className="flex flex-col mt-4">
-          <div className="flex items-center gap-6 mb-6 max-md:flex-col max-md:gap-2 max-md:items-start">
-            <div className="text-lg font-medium max-w-80 truncate">
+        <div className="flex flex-col mt-4 max-md:mt-0 max-md:items-center">
+          <div className="flex items-center gap-6 mb-6 max-md:flex-col max-md:gap-2 max-md:items-center">
+            <div className="font-heading text-lg font-medium max-w-80 truncate">
               {userName}
             </div>
             {controls}

@@ -252,8 +252,11 @@ export class HttpTransport {
   }
 }
 
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555";
+
 export const httpTransport = new HttpTransport(
-  { prefixUrl: "http://localhost:5555" },
+  { prefixUrl: API_BASE_URL },
   {
     getAccessToken,
     isAccessTokenExpired,

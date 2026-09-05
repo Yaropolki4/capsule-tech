@@ -1,0 +1,4 @@
+export const CAPSULE_CANVAS_ASPECT_RATIO = 3 / 4;
+export const CAPSULE_ITEM_BASE_SIZE_RATIO = 0.35;
+export const CAPSULE_ITEM_MIN_SCALE = 0.3;
+export const CAPSULE_ITEM_MAX_SCALE = 3;
