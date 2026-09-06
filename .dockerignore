@@ -8,3 +8,5 @@ common/dist
 common/node_modules
 backend/dist
 backend/node_modules
+landing/node_modules
+landing/.next
