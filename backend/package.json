@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed:catalog": "ts-node -r tsconfig-paths/register scripts/seed-catalog.ts"
+    "seed:catalog": "ts-node -r tsconfig-paths/register scripts/seed-catalog.ts",
+    "backfill:clothes-gender": "ts-node -r tsconfig-paths/register scripts/backfill-clothes-gender.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.817.0",

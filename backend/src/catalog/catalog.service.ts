@@ -80,6 +80,7 @@ export class CatalogService {
       searchParams,
       limit,
       excludeExternalIds,
+      gender,
     );
 
     if (hits.length > 0) {
@@ -148,6 +149,7 @@ export class CatalogService {
     params: SearchParams,
     limit: number,
     excludeExternalIds: string[],
+    gender?: Gender | null,
   ): Promise<{ hits: ProductResult[]; candidates: CatalogSearchRow[] }> {
     const queryEmbedding = await this.embeddingsService.embed(params.query);
     const poolSize = Math.max(limit * 3, 20);
@@ -158,6 +160,7 @@ export class CatalogService {
       poolSize,
       systemUserId,
       excludeExternalIds,
+      gender,
     );
 
     // Полная диагностика решения "кэш или WB": сколько вещей вообще в
@@ -273,7 +276,7 @@ export class CatalogService {
       return false;
     }
 
-    const { category, brand } =
+    const { category, brand, targetGender } =
       await this.clothesCharacterizerService.classifyCatalogItem({
         title: result.name,
         tags: result.description,
@@ -291,6 +294,7 @@ export class CatalogService {
       description: result.description,
       brand: result.brand ?? brand,
       category,
+      targetGender,
       imageUrl: result.photo,
       sourceUrl: result.url,
       externalId,

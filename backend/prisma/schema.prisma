@@ -81,6 +81,11 @@ model Clothes {
   rating         Float?
   feedbacksCount Int?    @map("feedbacks_count")
 
+  // На кого рассчитана вещь — классифицируется по названию/тегам вместе с
+  // category (см. ClothesCharacterizerService). null у вещей, засеянных до
+  // введения поля — до бэкфилла они не участвуют в фильтрации по полу.
+  targetGender ClothesGender? @map("target_gender")
+
   UserClothes  UserClothes[] @relation("clothes")
   capsuleItems CapsuleItem[]
   posts        Post[]
@@ -230,6 +235,12 @@ enum ClothesSource {
 enum Gender {
   MALE
   FEMALE
+}
+
+enum ClothesGender {
+  MALE
+  FEMALE
+  UNISEX
 }
 
 model ChatThread {

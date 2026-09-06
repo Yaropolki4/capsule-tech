@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ChatOpenAI } from '@langchain/openai';
 import { HumanMessage } from '@langchain/core/messages';
 import { z } from 'zod';
-import { ClothesCategory } from '@prisma/client';
+import { ClothesCategory, ClothesGender } from '@prisma/client';
 import { clothesCategoryLabels } from '@capsule/common';
 import {
   OPENROUTER_CHAT_MODEL,
@@ -25,6 +25,17 @@ const categoryLegend = clothesCategoryValues
 
 const categoryFieldDescription = `Наиболее подходящая категория вещи. Значения enum и их реальный смысл: ${categoryLegend}`;
 
+const clothesGenderValues = Object.values(ClothesGender) as [
+  ClothesGender,
+  ...ClothesGender[],
+];
+
+const targetGenderFieldDescription =
+  'На кого рассчитана вещь по названию и тегам: MALE — мужская, FEMALE — женская, ' +
+  'UNISEX — унисекс или пол не определить по описанию (нейтральные вещи вроде базовых ' +
+  'футболок, если явно не указано иное). Ошибка в эту сторону не критична, а вот ' +
+  'спутать MALE и FEMALE — критично, будь внимателен к явным маркерам пола в тексте.';
+
 const catalogClassificationSchema = z.object({
   category: z.enum(clothesCategoryValues).describe(categoryFieldDescription),
   brand: z
@@ -33,6 +44,9 @@ const catalogClassificationSchema = z.object({
     .describe(
       'Бренд/магазин вещи, извлечённый из названия, если удалось определить, иначе null',
     ),
+  targetGender: z
+    .enum(clothesGenderValues)
+    .describe(targetGenderFieldDescription),
 });
 
 const imageAnalysisSchema = z.object({
@@ -143,6 +157,7 @@ export class ClothesCharacterizerService {
   async classifyCatalogItem(input: { title: string; tags: string }): Promise<{
     category: ClothesCategory;
     brand: string | null;
+    targetGender: ClothesGender;
     costUsd: number;
     model: string;
   }> {
@@ -157,7 +172,8 @@ export class ClothesCharacterizerService {
       );
 
       const { raw, parsed: result } = await classifier.invoke(
-        `Определи категорию и бренд вещи по названию и тегам товара с маркетплейса.\n` +
+        `Определи категорию, бренд и на кого рассчитана вещь (пол) по названию и ` +
+          `тегам товара с маркетплейса.\n` +
           `Название: ${input.title}\n` +
           `Теги: ${input.tags}`,
       );
@@ -165,12 +181,14 @@ export class ClothesCharacterizerService {
       const costUsd = extractLangchainMessageCostUsd(raw);
 
       this.logger.debug(
-        `classifyCatalogItem() -> category=${result.category} brand="${result.brand}" costUsd=${costUsd}`,
+        `classifyCatalogItem() -> category=${result.category} brand="${result.brand}" ` +
+          `targetGender=${result.targetGender} costUsd=${costUsd}`,
       );
 
       return {
         category: result.category,
         brand: result.brand ?? null,
+        targetGender: result.targetGender,
         costUsd,
         model: this.chatModel.model,
       };

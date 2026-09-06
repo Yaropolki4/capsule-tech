@@ -79,7 +79,7 @@ async function seedOne(
     return 'skipped';
   }
 
-  const { category, brand } =
+  const { category, brand, targetGender } =
     await deps.clothesCharacterizerService.classifyCatalogItem({
       title: preset.title,
       tags: preset.tags,
@@ -95,6 +95,7 @@ async function seedOne(
     description: preset.tags,
     brand,
     category,
+    targetGender,
     imageUrl: preset.image,
     sourceUrl: preset.link,
     externalId,

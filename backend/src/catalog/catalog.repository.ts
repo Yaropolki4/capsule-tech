@@ -1,5 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClothesCategory, ClothesSource, Prisma } from '@prisma/client';
+import {
+  ClothesCategory,
+  ClothesGender,
+  ClothesSource,
+  Gender,
+  Prisma,
+} from '@prisma/client';
 import {
   SECURE_PRISMA_SERVICE,
   SecurePrismaService,
@@ -28,6 +34,7 @@ export interface CatalogItemInput {
   description: string | null;
   brand: string | null;
   category: ClothesCategory;
+  targetGender: ClothesGender;
   imageUrl: string;
   sourceUrl: string;
   externalId: string;
@@ -64,14 +71,24 @@ export class CatalogRepository {
    * excludeExternalIds — id вещей с Wildberries, уже показанных пользователю
    * в этом треде (см. CatalogService/ChatService) — чтобы "покажи другие
    * шорты" реально давало другие вещи, а не тот же топ по близости.
+   *
+   * userGender — жёстко исключает вещи ПРОТИВОПОЛОЖНОГО пола (мужчине не
+   * покажем FEMALE, женщине не покажем MALE). UNISEX и неклассифицированные
+   * (target_gender IS NULL, старые вещи до бэкфилла) пропускаем всегда —
+   * лучше нейтральная вещь, чем ложно исключённая. Если пол пользователя
+   * неизвестен, фильтр не применяется вовсе.
    */
   async findSimilar(
     embedding: number[],
     poolSize: number,
     systemUserId: string,
     excludeExternalIds: string[] = [],
+    userGender?: Gender | null,
   ): Promise<CatalogSearchRow[]> {
     const vectorLiteral = `[${embedding.join(',')}]`;
+    const oppositeGender: ClothesGender | null =
+      userGender === 'MALE' ? 'FEMALE' : userGender === 'FEMALE' ? 'MALE' : null;
+    const hasGenderFilter = oppositeGender !== null;
 
     return this.prisma.$queryRaw<CatalogSearchRow[]>`
       SELECT
@@ -90,6 +107,11 @@ export class CatalogRepository {
         AND "createdById" = ${systemUserId}
         AND embedding IS NOT NULL
         AND NOT (external_id = ANY(${excludeExternalIds}::text[]))
+        AND (
+          NOT ${hasGenderFilter}
+          OR target_gender IS NULL
+          OR target_gender != ${oppositeGender}::"ClothesGender"
+        )
       ORDER BY embedding <=> ${vectorLiteral}::vector
       LIMIT ${poolSize}
     `;
@@ -97,6 +119,29 @@ export class CatalogRepository {
 
   findByExternalId(externalId: string) {
     return this.prisma.clothes.findUnique({ where: { externalId } });
+  }
+
+  /** Вещи каталога/WEB-кэша без определённого пола — кандидаты на бэкфилл. */
+  findMissingTargetGender(): Promise<
+    { id: string; name: string | null; description: string | null }[]
+  > {
+    return this.prisma.clothes.findMany({
+      where: {
+        source: { in: [ClothesSource.CATALOG, ClothesSource.WEB] },
+        targetGender: null,
+      },
+      select: { id: true, name: true, description: true },
+    });
+  }
+
+  async updateTargetGender(
+    id: string,
+    targetGender: ClothesGender,
+  ): Promise<void> {
+    await this.prisma.clothes.update({
+      where: { id },
+      data: { targetGender },
+    });
   }
 
   /**
@@ -135,6 +180,7 @@ export class CatalogRepository {
           description: data.description,
           brand: data.brand,
           category: data.category,
+          targetGender: data.targetGender,
           imageUrl: data.imageUrl,
           sourceUrl: data.sourceUrl,
           externalId: data.externalId,
