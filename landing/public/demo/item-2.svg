@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2F2029"/>
+      <stop offset="100%" stop-color="#1F1B24"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="20" fill="url(#g2)"/>
+  <rect x="0.5" y="0.5" width="239" height="239" rx="19.5" fill="none" stroke="rgba(255,255,255,0.07)"/>
+  <g stroke="rgba(245,242,246,0.35)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M92 62h56l6 30-14 6v98h-16v-70h-8v70h-16V98l-14-6z"/>
+  </g>
+  <text x="18" y="222" font-family="monospace" font-size="9" letter-spacing="1.5" fill="rgba(245,242,246,0.4)">MAISON DAVID</text>
+</svg>

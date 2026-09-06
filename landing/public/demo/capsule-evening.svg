@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 400">
+  <defs>
+    <linearGradient id="ce" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3a2f28"/>
+      <stop offset="100%" stop-color="#1f1b1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="400" fill="url(#ce)"/>
+  <g stroke="rgba(245,242,246,0.4)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M140 90c0-11 9-20 20-20s20 9 20 20"/>
+    <path d="M108 118l32-28 20 16 20-16 32 28-16 20v150h-72V138z"/>
+  </g>
+  <text x="20" y="374" font-family="monospace" font-size="10" letter-spacing="1.5" fill="rgba(245,242,246,0.45)">БЕЛЫЙ И СЕРЕБРО</text>
+</svg>

@@ -2,15 +2,20 @@ node_modules
 backend/node_modules
 frontend/node_modules
 common/node_modules
+landing/node_modules
 
 backend/dist
 frontend/.next
 frontend/build
 common/dist
+landing/.next
+landing/build
 
 backend/.env
 frontend/.env
+landing/.env
 
 frontend/tsconfig.tsbuildinfo
 backend/tsconfig.tsbuildinfo
+landing/tsconfig.tsbuildinfo
 
