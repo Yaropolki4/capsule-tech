@@ -12,25 +12,49 @@ import { toast } from "sonner";
 import { useStickToBottom } from "use-stick-to-bottom";
 import type { CatalogSearchSourceDto } from "@capsule/common";
 import { cn } from "@/lib/utils";
+import { RotatingText } from "@/shared/ui/rotating-text";
+import { MagicOverlay } from "@/shared/ui/magic-overlay";
 import type { ChatMessage, ToolActivity } from "../model/use-ai-chat";
 import { useSaveToWardrobeMutation } from "../model/use-save-to-wardrobe-mutation";
 import { useSaveWildberriesItemMutation } from "../model/use-save-wildberries-item-mutation";
 import { useConfirmCapsuleProposal } from "../model/use-confirm-capsule-proposal";
 import { AssistantAvatar } from "./assistant-avatar";
+import { MarkdownContent } from "./markdown-content";
 
 const MAX_SUGGESTIONS = 3;
 const MARKDOWN_IMAGE_REGEX = /!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g;
 
-function ThinkingDots() {
+const THINKING_PHRASES = [
+  "Думаю над ответом...",
+  "Изучаю твой стиль...",
+  "Подбираю варианты...",
+  "Подготавливаю образы...",
+  "Ищу вдохновение...",
+];
+
+const CAPSULE_CREATION_PHRASES = [
+  "Подбираем вещи...",
+  "Продумываем сочетание...",
+  "Собираем образ...",
+  "Почти готово...",
+];
+
+function ThinkingIndicator() {
   return (
-    <div className="flex items-center gap-1.5 py-0.5">
-      {[0, 1, 2].map((index) => (
-        <span
-          key={index}
-          className="size-1.5 rounded-full bg-primary"
-          style={{ opacity: 1 - index * 0.3 }}
-        />
-      ))}
+    <div className="flex items-center gap-2 py-0.5">
+      <div className="flex items-center gap-1.5">
+        {[0, 1, 2].map((index) => (
+          <span
+            key={index}
+            className="size-1.5 rounded-full bg-primary animate-thinking-dot"
+            style={{ animationDelay: `${index * 0.15}s` }}
+          />
+        ))}
+      </div>
+      <RotatingText
+        phrases={THINKING_PHRASES}
+        className="text-xs text-muted-foreground"
+      />
     </div>
   );
 }
@@ -333,6 +357,11 @@ function CapsuleProposalCard({
 
   return (
     <div className="flex flex-col gap-2">
+      <MagicOverlay
+        open={isConfirming}
+        title="Собираем капсулу"
+        phrases={CAPSULE_CREATION_PHRASES}
+      />
       {proposal.items.map((item) => (
         <div
           key={item.url}
@@ -408,8 +437,8 @@ function AssistantMessageBubble({
         "flex flex-col gap-3 bg-card border border-border"
       )}
     >
-      {isWaiting && <ThinkingDots />}
-      {text && <div>{text}</div>}
+      {isWaiting && <ThinkingIndicator />}
+      {text && <MarkdownContent text={text} />}
       {activity.length > 0 && (
         <div className="flex flex-col gap-1.5">
           {activity.map((item, index) => (

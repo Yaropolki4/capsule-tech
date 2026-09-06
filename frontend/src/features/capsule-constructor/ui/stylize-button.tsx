@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Wand2 } from "lucide-react";
 import { Button } from "@/shared/ui/ui/button";
+import { MagicOverlay } from "@/shared/ui/magic-overlay";
 import { stylizeCapsule } from "@/entities/capsules";
 import {
   describeInsufficientTokensError,
@@ -11,6 +12,13 @@ import {
 } from "@/entities/billing";
 import { queryClient } from "@/shared/query-client";
 import { useCanvasActions } from "../model/canvas.store";
+
+const STYLIZE_PHRASES = [
+  "Оформляем образ...",
+  "Подбираем стиль...",
+  "Рисуем капсулу...",
+  "Почти готово...",
+];
 
 export function StylizeButton({
   itemImageUrls,
@@ -48,15 +56,22 @@ export function StylizeButton({
   };
 
   return (
-    <Button
-      onClick={handleStylize}
-      disabled={disabled || isStylizing}
-      variant="destructive"
-      fullWidth
-      size="l"
-    >
-      <Wand2 />
-      {isStylizing ? "Оформляем..." : "Оформить"}
-    </Button>
+    <>
+      <MagicOverlay
+        open={isStylizing}
+        title="Оформляем капсулу"
+        phrases={STYLIZE_PHRASES}
+      />
+      <Button
+        onClick={handleStylize}
+        disabled={disabled || isStylizing}
+        variant="destructive"
+        fullWidth
+        size="l"
+      >
+        <Wand2 />
+        {isStylizing ? "Оформляем..." : "Оформить"}
+      </Button>
+    </>
   );
 }

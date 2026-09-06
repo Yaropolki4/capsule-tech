@@ -187,6 +187,52 @@ body {
   animation: float-b 11s ease-in-out infinite;
 }
 
+@keyframes thinking-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+.animate-thinking-dot {
+  animation: thinking-dot 1.2s ease-in-out infinite;
+}
+
+@keyframes magic-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+.animate-magic-ring {
+  animation: magic-ring 2.1s ease-out infinite;
+}
+
+@keyframes magic-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-magic-pulse {
+  animation: magic-pulse 1.8s ease-in-out infinite;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

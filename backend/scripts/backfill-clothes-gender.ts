@@ -35,7 +35,9 @@ import { ClothesCharacterizerService } from '../src/llm/clothes-characterizer.se
 })
 class BackfillAppModule {}
 
-const DELAY_BETWEEN_ITEMS_MS = 200;
+// Аккаунт OpenRouter ограничен 20 запросами в минуту для этой модели —
+// 3.5с между вещами держит нас в районе ~17 запросов/мин с запасом.
+const DELAY_BETWEEN_ITEMS_MS = 3500;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

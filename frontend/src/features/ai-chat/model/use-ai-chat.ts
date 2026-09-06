@@ -73,7 +73,10 @@ export function useAiChat(threadId: string) {
     // временным id черновика и рендер начинает вести себя непредсказуемо.
     if (!trimmed || isSending) return;
 
-    const optimisticId = `pending-${crypto.randomUUID()}`;
+    // crypto.randomUUID недоступен вне secure context (HTTP не на localhost),
+    // а этот id — просто временный ключ до замены реальным сообщением с
+    // сервера, криптостойкость не нужна.
+    const optimisticId = `pending-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     setMessages((prev) => [
       ...prev,
