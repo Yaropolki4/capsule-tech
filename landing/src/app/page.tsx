@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SupportBanner } from "@/components/support-banner";
 import { ChatDemo } from "@/components/chat-demo";
+import { frontendUrl } from "@/lib/urls";
 
 const FEATURES = [
   {
@@ -24,19 +25,19 @@ const FEATURES = [
 
 const CAPSULES = [
   {
-    image: "/demo/capsule-evening.svg",
+    image: "/demo/capsule-evening.webp",
     tag: "вечер · 5 вещей · 3 образа",
     title: "Белый и серебро",
     text: "Платье цвета шампань, блеск в обуви и сумке.",
   },
   {
-    image: "/demo/capsule-city.svg",
+    image: "/demo/capsule-city.webp",
     tag: "город · 6 вещей · 5 образов",
     title: "Белое с одним акцентом",
     text: "Кружево и жакет — от работы до ужина, акцент один: красная сумка.",
   },
   {
-    image: "/demo/capsule-casual.svg",
+    image: "/demo/capsule-casual.webp",
     tag: "каждый день · 4 вещи · 4 образа",
     title: "Серый монохром",
     text: "Один тон, один принт — утром ничего не нужно подбирать.",
@@ -49,8 +50,9 @@ export default function Home() {
       <section className="relative overflow-hidden bg-[radial-gradient(110%_80%_at_78%_6%,#2A0A1D_0%,#0B0A0C_58%)]">
         <SiteHeader />
 
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-[1320px] w-full mx-auto px-6 sm:px-10 pt-6 pb-14">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-[1320px] w-full mx-auto px-6 sm:px-10 py-[12px]">
           <div className="flex flex-col gap-5 min-w-0">
+            <SupportBanner />
             <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-brand-accent-text">
               ai-стилист · капсульный гардероб
             </div>
@@ -64,7 +66,7 @@ export default function Home() {
             </p>
             <div className="flex gap-3 flex-wrap pt-1">
               <a
-                href="#signup"
+                href={frontendUrl("/register")}
                 className="inline-flex items-center gap-2.5 h-14 px-7 rounded-2xl bg-primary text-primary-foreground text-base font-semibold hover:brightness-110 transition-[filter]"
               >
                 Создать аккаунт
@@ -88,8 +90,6 @@ export default function Home() {
 
           <ChatDemo />
         </div>
-
-        <SupportBanner />
       </section>
 
       <section id="features" className="flex flex-col gap-9 max-w-[1320px] w-full mx-auto px-6 sm:px-10 py-20 sm:py-28">
@@ -188,7 +188,7 @@ export default function Home() {
             </p>
           </div>
           <a
-            href="#"
+            href={frontendUrl("/register")}
             className="inline-flex items-center gap-2.5 h-14 px-[30px] rounded-2xl bg-primary text-primary-foreground text-base font-semibold whitespace-nowrap hover:brightness-110 transition-[filter]"
           >
             Создать аккаунт

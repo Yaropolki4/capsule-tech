@@ -34,22 +34,21 @@ const STEP_INDEX = Object.fromEntries(
 const USER_PROMPT = "Создай уютный вечерний образ";
 
 const CAPSULE_ITEMS = [
-  { name: "sulide", price: 1509, image: "/demo/item-1.svg" },
-  { name: "MAISON DAVID", price: 6012, image: "/demo/item-2.svg" },
-  { name: "Ремень замшевый для джинс", price: 720, image: "/demo/item-3.svg" },
-  { name: "Dino Ricci Select", price: 2731, image: "/demo/item-4.svg" },
+  { name: "Джемпер женский 100% шерсть мериноса", price: 4735, image: "/demo/item-1.webp" },
+  { name: "MAISON DAVID", price: 6012, image: "/demo/item-2.webp" },
+  { name: "Ремень замшевый для джинс", price: 720, image: "/demo/item-3.webp" },
+  { name: "Dino Ricci Select", price: 2731, image: "/demo/item-4.webp" },
 ];
 
 function StylistAvatar({ className }: { className?: string }) {
   return (
     <div
-      className={cn(
-        "relative shrink-0 rounded-full overflow-hidden",
-        "bg-[radial-gradient(circle_at_32%_30%,#ffffff_0%,#ffffff_28%,#E11D74_30%,#c2135f_100%)]",
-        className
-      )}
+      className={cn("relative shrink-0 rounded-full overflow-hidden", className)}
       aria-hidden
-    />
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/ai-logo.png" alt="" className="absolute inset-0 size-full object-cover" />
+    </div>
   );
 }
 
@@ -103,29 +102,30 @@ export function ChatDemo() {
   const showProposalBody = at("proposal");
   const isPressing = step === "pressing";
   const isLoading = step === "loading";
-  const showResultMessage = at("result");
+  const showResultModal = at("result");
+  const isFadingOut = step === "resetting";
 
   return (
     <div
       className={cn(
-        "min-w-0 flex flex-col gap-3.5 p-4 sm:p-5 rounded-[26px]",
+        "relative min-w-0 h-[675px] flex flex-col gap-3.5 p-4 sm:p-5 rounded-[26px]",
         "bg-[rgba(23,20,26,.75)] backdrop-blur-xl border border-white/10",
         "shadow-[0_40px_90px_-40px_rgba(0,0,0,.9)]"
       )}
     >
-      <div className="flex items-center gap-2 font-mono text-[10px] tracking-[0.16em] uppercase text-[#6E6674]">
+      <div className="shrink-0 flex items-center gap-2 font-mono text-[10px] tracking-[0.16em] uppercase text-[#6E6674]">
         <span className="size-1.5 rounded-full bg-emerald-400" />
         чат со стилистом
       </div>
 
       <div
         aria-hidden
-        className="pointer-events-none select-none flex flex-col gap-3 min-h-[280px] justify-end"
+        className="pointer-events-none select-none flex-1 min-h-0 overflow-hidden flex flex-col justify-end"
       >
         <div
           className={cn(
             "flex flex-col gap-3 transition-opacity duration-300",
-            step === "resetting" ? "opacity-0" : "opacity-100"
+            isFadingOut ? "opacity-0" : "opacity-100"
           )}
         >
           {showUser && (
@@ -154,16 +154,7 @@ export function ChatDemo() {
                       Wildberries.
                     </p>
 
-                    <div className="relative flex flex-col gap-2">
-                      {isLoading && (
-                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-[14px] bg-[#241F29]/95 backdrop-blur-sm">
-                          <Loader2 className="size-5 animate-spin text-brand-accent-text" />
-                          <span className="text-xs text-muted-foreground">
-                            Собираем капсулу...
-                          </span>
-                        </div>
-                      )}
-
+                    <div className="flex flex-col gap-2">
                       {CAPSULE_ITEMS.map((item) => (
                         <div
                           key={item.name}
@@ -201,34 +192,49 @@ export function ChatDemo() {
               </div>
             </div>
           )}
-
-          {showResultMessage && (
-            <div className="flex items-start gap-2.5 animate-rise-in">
-              <StylistAvatar className="size-8 mt-0.5" />
-              <div className="min-w-0 flex-1 flex flex-col gap-2.5 px-4 py-3 rounded-[4px_16px_16px_16px] bg-[#241F29] text-[15px] leading-snug">
-                <p className="text-foreground/90">
-                  Готово! Капсула «Уютный тёплый вечер» сохранена в твою ленту.
-                </p>
-                <div className="relative w-full max-w-[220px] aspect-[4/5] rounded-[14px] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/demo/capsule-result.svg"
-                    alt=""
-                    className="absolute inset-0 size-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 px-2 py-2 pl-4 rounded-full bg-[#0F0D11] border border-white/10 text-[#6E6674] text-[14.5px]">
+      <div className="shrink-0 flex items-center gap-2.5 px-2 py-2 pl-4 rounded-full bg-[#0F0D11] border border-white/10 text-[#6E6674] text-[14.5px]">
         <span className="flex-1 truncate">Покажи вариант с юбкой…</span>
         <span className="flex items-center justify-center size-9 rounded-full bg-primary shrink-0">
           <ArrowUp className="size-4 text-primary-foreground" />
         </span>
       </div>
+
+      {(isLoading || showResultModal) && (
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-0 z-20 flex items-center justify-center p-6 rounded-[26px]",
+            "bg-black/55 backdrop-blur-sm transition-opacity duration-300",
+            isFadingOut ? "opacity-0" : "opacity-100"
+          )}
+        >
+          {isLoading ? (
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="size-7 animate-spin text-brand-accent-text" />
+              <span className="text-sm text-muted-foreground">
+                Собираем капсулу...
+              </span>
+            </div>
+          ) : (
+            <div className="w-full max-w-[340px] flex flex-col gap-4 p-5 rounded-[22px] bg-card border border-white/10 shadow-2xl animate-rise-in">
+              <div className="relative w-full aspect-[4/5] rounded-[16px] overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/demo/capsule-result.webp"
+                  alt=""
+                  className="absolute inset-0 size-full object-cover"
+                />
+              </div>
+              <p className="text-base text-center leading-snug text-foreground/90">
+                Готово! Капсула «Уютный тёплый вечер» сохранена в твою ленту.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

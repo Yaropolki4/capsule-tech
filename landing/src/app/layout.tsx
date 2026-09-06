@@ -21,9 +21,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Capsule AI — капсульный гардероб с ИИ",
+  title: "CAPSULE AI PROMO",
   description:
     "Загрузи гардероб, напиши задачу словами — ИИ соберёт капсулу и объяснит, почему вещи сочетаются.",
+  icons: {
+    icon: "/ai-logo.png",
+    apple: "/ai-logo.png",
+  },
 };
 
 export default function RootLayout({
