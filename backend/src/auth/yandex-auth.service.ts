@@ -165,10 +165,14 @@ export class YandexAuthService {
   }
 
   private logError(message: string, error: unknown): void {
+    const status = (error as { response?: { status?: unknown } })?.response
+      ?.status;
     const details =
       (error as { response?: { data?: unknown } })?.response?.data ??
       (error instanceof Error ? error.message : error);
 
-    this.logger.error(message, details);
+    this.logger.error(
+      `${message} (status=${status ?? 'n/a'}): ${JSON.stringify(details)}`,
+    );
   }
 }
