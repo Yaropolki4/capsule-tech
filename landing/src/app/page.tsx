@@ -9,17 +9,17 @@ const FEATURES = [
   {
     icon: Sparkles,
     title: "Капсулы",
-    text: "6–8 вещей, из которых получается неделя образов. ИИ учитывает погоду, повод и то, что уже висит в шкафу.",
+    text: "6–8 вещей, из которых получаются неповторимые образы. ИИ сам создает капсулы из вещей.",
   },
   {
     icon: Shirt,
     title: "Виртуальная примерка",
-    text: "Смотри образ на себе до покупки и до утренней спешки: вещь надевается на твоё фото за пару секунд.",
+    text: "Примеряй образ на себе до покупки: вещь надевается на твоё фото за пару секунд.",
   },
   {
     icon: LayoutGrid,
     title: "Лента",
-    text: "Капсулы других пользователей, лайки и сохранения. Понравился образ — соберём похожий из своих вещей.",
+    text: "Делись своими капсулами, сохраняй образы других пользователей.",
   },
 ];
 
@@ -57,19 +57,18 @@ export default function Home() {
               ai-стилист · капсульный гардероб
             </div>
             <h1 className="font-heading text-[38px] sm:text-[52px] lg:text-[60px] leading-[1] font-bold tracking-[-0.04em] text-balance">
-              Капсула из своих вещей за{" "}
+              Капсула из любых вещей за{" "}
               <span className="text-brand-accent-text">две минуты</span>
             </h1>
             <p className="text-[17px] leading-relaxed text-muted-foreground max-w-[460px] text-pretty">
-              Загрузи гардероб, напиши задачу словами — ИИ соберёт готовые
-              образы и объяснит, почему они работают.
+              ИИ соберет сам найдет подходящие вещи и соберет из них образ.
             </p>
             <div className="flex gap-3 flex-wrap pt-1">
               <a
                 href={frontendUrl("/register")}
                 className="inline-flex items-center gap-2.5 h-14 px-7 rounded-2xl bg-primary text-primary-foreground text-base font-semibold hover:brightness-110 transition-[filter]"
               >
-                Создать аккаунт
+                Начать
                 <ArrowRight className="size-[18px]" />
               </a>
               <a
@@ -92,7 +91,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="flex flex-col gap-9 max-w-[1320px] w-full mx-auto px-6 sm:px-10 py-20 sm:py-28">
+      <section
+        id="features"
+        className="flex flex-col gap-9 max-w-[1320px] w-full mx-auto px-6 sm:px-10 py-20 sm:py-28"
+      >
         <div className="flex flex-col gap-3 max-w-[620px]">
           <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-brand-accent-text">
             возможности
@@ -109,7 +111,10 @@ export default function Home() {
               className="flex flex-col gap-3.5 p-6 rounded-3xl bg-card border border-border hover:border-primary/45 transition-colors"
             >
               <div className="size-[42px] rounded-2xl bg-brand-accent-soft flex items-center justify-center">
-                <Icon className="size-[21px] text-brand-accent-text" strokeWidth={1.9} />
+                <Icon
+                  className="size-[21px] text-brand-accent-text"
+                  strokeWidth={1.9}
+                />
               </div>
               <div className="font-heading text-xl font-semibold tracking-[-0.02em]">
                 {title}
@@ -127,11 +132,11 @@ export default function Home() {
               главная фича
             </div>
             <h2 className="font-heading text-[28px] sm:text-[36px] leading-[1.06] font-bold tracking-[-0.035em] text-balance">
-              Капсула — 5–8 вещей, из которых собирается весь сезон
+              Капсула — самодостаточный набор из 3-8 вещей.
             </h2>
             <p className="text-base leading-relaxed text-muted-foreground text-pretty">
-              ИИ подбирает набор, где каждая вещь работает минимум в трёх
-              образах.
+              ИИ подберёт капсулу сам — просто назовите повод, погоду и свои
+              предпочтения.
             </p>
           </div>
 
@@ -183,15 +188,14 @@ export default function Home() {
               Первая капсула — сегодня вечером
             </div>
             <p className="text-[15px] text-muted-foreground">
-              Регистрация занимает минуту, гардероб можно загружать по одной
-              вещи.
+              Быстрая регистрация и множество бесплатных попыток подбора капсул.
             </p>
           </div>
           <a
             href={frontendUrl("/register")}
             className="inline-flex items-center gap-2.5 h-14 px-[30px] rounded-2xl bg-primary text-primary-foreground text-base font-semibold whitespace-nowrap hover:brightness-110 transition-[filter]"
           >
-            Создать аккаунт
+            Начать
             <ArrowRight className="size-[18px]" />
           </a>
         </div>
