@@ -4,6 +4,7 @@ import "./globals.css";
 import { RootProvider } from "@/fsd-app";
 import { Toaster } from "@/shared/ui/ui/sonner";
 import { ThemeProvider } from "@/shared/providers/theme-provider";
+import { CookieBanner } from "@/shared/ui/cookie-banner";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -52,6 +53,7 @@ export default function RootLayout({
           <div className="fixed top-0 left-0 right-0 bottom-0 flex max-md:flex-col-reverse">
             <RootProvider>{children}</RootProvider>
           </div>
+          <CookieBanner />
         </ThemeProvider>
       </body>
     </html>

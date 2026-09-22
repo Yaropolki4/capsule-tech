@@ -28,6 +28,7 @@ import {
   AvatarSkeleton,
 } from "@/shared/ui/ui/avatar";
 import { EditPhotoEditor } from "./edit-phote-editor";
+import { usePhotoConsent } from "@/shared/lib/photo-consent/use-photo-consent";
 
 export type EditProfileMenuProps = {
   name: string;
@@ -141,6 +142,7 @@ export function EditProfileMenu({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const { openModal } = useModal();
+  const { withConsent, consentDialog } = usePhotoConsent();
 
   return (
     <DialogContent
@@ -180,7 +182,7 @@ export function EditProfileMenu({
             )}
             <Button
               onClick={() => {
-                inputRef.current?.click();
+                withConsent(() => inputRef.current?.click());
               }}
               size="s"
             >
@@ -236,6 +238,7 @@ export function EditProfileMenu({
           Сохранить
         </Button>
       </DialogFooter>
+      {consentDialog}
     </DialogContent>
   );
 }

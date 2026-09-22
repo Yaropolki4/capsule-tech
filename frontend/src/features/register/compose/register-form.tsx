@@ -11,6 +11,7 @@ import { Button } from "@/shared/ui/ui/button";
 import { cn } from "@/lib/utils";
 import { routes } from "@/shared/constants/routes";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 import { YandexIdButton } from "@/shared/ui/yandex-id-button";
 import {
@@ -29,7 +30,7 @@ const authSchema = z.object({
   password: z.string().min(6, "Пароль должен быть не менее 6 символов"),
   agree: z
     .boolean()
-    .refine((value) => value, { message: "Нужно согласие с условиями" }),
+    .refine((value) => value, { message: "Нужно согласие на обработку персональных данных" }),
 });
 
 type RegisterFormData = z.infer<typeof authSchema>;
@@ -176,7 +177,17 @@ export function RegisterForm() {
             )}
           />
           <span>
-            Соглашаюсь с условиями и политикой конфиденциальности
+            Я даю согласие на обработку моих персональных данных (имя, email,
+            содержание сообщений, загружаемые фотографии) в соответствии с{" "}
+            <Link
+              href={routes.privacy}
+              target="_blank"
+              className="text-brand-accent-text underline underline-offset-2 hover:no-underline"
+            >
+              Политикой обработки персональных данных
+            </Link>
+            , включая их передачу и обработку сервисом OpenAI для формирования
+            ответов ИИ-ассистента.
           </span>
         </label>
       }

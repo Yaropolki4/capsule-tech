@@ -8,6 +8,7 @@ export const routes = {
   aiStylist: "/ai-stylist",
   getAiStylistThread: (id: string) => `/ai-stylist/${id}`,
   fittingRoom: "/fitting-room",
+  privacy: "/privacy",
 } as const;
 
-export const publicRoutes = [routes.register] as const;
+export const publicRoutes = [routes.register, routes.privacy] as const;

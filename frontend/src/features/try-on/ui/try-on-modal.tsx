@@ -30,6 +30,7 @@ import { queryClient } from "@/shared/query-client";
 import { routes } from "@/shared/constants/routes";
 import { ensureBrowserDecodableImage } from "@/shared/lib/image/heic";
 import { cn } from "@/lib/utils";
+import { usePhotoConsent } from "@/shared/lib/photo-consent/use-photo-consent";
 
 type Step = "photo" | "confirm" | "result";
 
@@ -46,6 +47,7 @@ export function TryOnModal({
   const router = useRouter();
   const [currentUser] = useCurrentUser();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { withConsent, consentDialog } = usePhotoConsent();
 
   const [step, setStep] = useState<Step>("photo");
   const [selectedPhoto, setSelectedPhoto] = useState<UserPhoto | null>(null);
@@ -158,7 +160,9 @@ export function TryOnModal({
                 <button
                   type="button"
                   disabled={isUploading}
-                  onClick={() => inputRef.current?.click()}
+                  onClick={() =>
+                    withConsent(() => inputRef.current?.click())
+                  }
                   className={cn(
                     "flex flex-col items-center justify-center gap-1",
                     "rounded-[var(--radius-card)] border-2 border-dashed border-border text-muted-foreground",
@@ -260,6 +264,7 @@ export function TryOnModal({
           </DialogFooter>
         </>
       )}
+      {consentDialog}
     </DialogContent>
   );
 }

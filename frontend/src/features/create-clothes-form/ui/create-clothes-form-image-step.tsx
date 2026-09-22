@@ -2,6 +2,7 @@ import { Button } from "@/shared/ui/ui/button";
 import { Input } from "@/shared/ui/ui/input";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { usePhotoConsent } from "@/shared/lib/photo-consent/use-photo-consent";
 
 export function CreateClothesFormImageStep({
   onImageChange,
@@ -10,6 +11,7 @@ export function CreateClothesFormImageStep({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const { withConsent, consentDialog } = usePhotoConsent();
 
   return (
     <div
@@ -26,13 +28,17 @@ export function CreateClothesFormImageStep({
       onDrop={(event) => {
         event.preventDefault();
         setIsDragOver(false);
-        onImageChange(event.dataTransfer.files?.[0] ?? null);
+        const file = event.dataTransfer.files?.[0] ?? null;
+        withConsent(() => onImageChange(file));
       }}
     >
       <span className="text-sm text-muted-foreground">
         Перетащи фото или
       </span>
-      <Button onClick={() => inputRef.current?.click()} variant="outline">
+      <Button
+        onClick={() => withConsent(() => inputRef.current?.click())}
+        variant="outline"
+      >
         Выбрать изображение
       </Button>
       <span className="font-mono text-xs text-muted-foreground">
@@ -46,6 +52,7 @@ export function CreateClothesFormImageStep({
         className="w-40 hidden"
         id="file"
       />
+      {consentDialog}
     </div>
   );
 }
