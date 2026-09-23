@@ -1,12 +1,13 @@
 "use client";
 import { logout, useCurrentUser } from "@/entities/user-session";
 import { cn } from "@/lib/utils";
-import { Camera, CircleUser, House, LogOut, Shapes, Shirt, Sparkles } from "lucide-react";
+import { Camera, CircleUser, House, LogOut, Send, Shapes, Shirt, Sparkles } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { ResponsiveButton } from "./responsive-button";
 import { QuotaCard } from "./quota-card";
 import { ProfileFooter } from "./profile-footer";
 import { routes } from "@/shared/constants/routes";
+import { TELEGRAM_BOT_URL } from "@/shared/constants/external-links";
 
 function Logo() {
   return (
@@ -71,6 +72,18 @@ export function Sidebar() {
           active={pathname === routes.aiStylist}
           className="justify-start max-lg:justify-center"
         />
+
+        {TELEGRAM_BOT_URL && (
+          <ResponsiveButton
+            onClick={() =>
+              window.open(TELEGRAM_BOT_URL, "_blank", "noopener,noreferrer")
+            }
+            text="Бот в Telegram"
+            icon={<Send size={24} className="size-6" />}
+            variant="ghost"
+            className="justify-start max-lg:justify-center"
+          />
+        )}
 
         <SectionLabel>Мой гардероб</SectionLabel>
 
